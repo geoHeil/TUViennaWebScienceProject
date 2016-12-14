@@ -1,0 +1,37 @@
+\documentclass[11pt]{report}
+
+\begin{document}
+\title{Web Science TU Vienna Terrorists graph analysis project}
+\author{me and you}
+\maketitle
+\tableofcontents
+
+\begin{abstract}
+	This is the abstract
+\end{abstract}
+
+\chapter{first}
+foo bar super
+
+And here is a nice code chunk from R
+
+<<label="Test", results='markup'>>=
+variable1 <- 1
+variable2 = 2
+hello_txt <- "Hello world" # just to illustrate the markup
+@
+
+Thats all! foo bar
+
+silent load of library
+
+<<libraries, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache.lazy=FALSE, message=FALSE>>=
+library(MASS)
+library(memisc)
+1+1
+@
+check out sweave documentation for details
+
+\textsf{smallRExample.Rnw}
+and more text
+\end{document}

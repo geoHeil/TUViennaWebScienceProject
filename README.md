@@ -10,6 +10,7 @@ Group partners are:
   - http://blog.revolutionanalytics.com/2016/01/twitter-sentiment.html
   - https://cran.r-project.org/web/packages/SocialMediaLab/SocialMediaLab.pdf
   - https://gephi.org/features/
+  - http://www.vesnam.com/Rblog/viznets2/
 
 
 ## possible dataset
