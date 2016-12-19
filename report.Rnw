@@ -1,5 +1,6 @@
 \documentclass[11pt]{report}
 
+\usepackage{todonotes}
 \begin{document}
 \title{Web Science TU Vienna Terrorists graph analysis project}
 \author{me and you}
@@ -10,7 +11,35 @@
 	This is the abstract
 \end{abstract}
 
-\chapter{first}
+\chapter{Data Analysis and visualization}
+\section{Network statistics}
+Calculate different metrics and measures, e.g., number of vertices, number of edges and their weights, degree distribution (resp. in-degree and out-degree in the directed case), centrality indices, clustering coefficient, reciprocity, shortest paths, network diameter, density, number and size of connected components.
+
+\section{Communities}
+Identify communities/groups and their structure.
+
+\section{Visualization}
+Use different layouts to find and highlight patterns and relationships. To make sense of the data more easily, map the metrics and measures calculated onto visual properties such as size, colour, and opacity.
+
+\chapter{Longitudinal}
+How did the network change? What dynamics can beidentified? Are there critical events in the period observed?
+
+\chapter{Text analysis}
+What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
+
+
+\chapter{Replacement for collection of data}
+
+%wie besprochen, falls Sie für das Projekt die Daten verwenden wollen, spricht nichts dagegen. 
+
+%Wenn sich Ihre Gruppe dazu entschließt, dann aber jedenfalls:
+%- die Daten und deren Kontext  genau beschreiben (Hintergrundinformation zum Setting und deskriptive Statistik vom ganzen Datensatz).
+%- falls Sie ein Teilsample zur Analyse auswählen, argumentieren, warum dieses Teilsample (deskriptive Statistik auch vom Sample).
+%- andere, die es zu den Daten schon gibt und die eventuell für die Analyse relevant sind, erwähnen und in die Diskussion/Interpretation einbeziehen.
+
+%Das muss alles nicht so ausführlich sein, aber Ziel sollte sein, ein guten Überblick zu geben.
+
+\todo{write about other kaggle solutions}
 foo bar super
 
 And here is a nice code chunk from R
@@ -34,4 +63,14 @@ check out sweave documentation for details
 
 \textsf{smallRExample.Rnw}
 and more text
+
+\chapter{Discussion and conclusion}
+What about the quality of the data? What are the limitations? What questions can be answered and what new insights can be gained by analyzing the structure of the networks? What nodes are in strategic locations? What can you tell about the communities identified? What do you learn by looking at the different networks? Why is it interesting to combine the information from structural and textual data? Interpret and discuss your findings!
+
+\chapter{other things}
+report
+
+code
+
+presentation
 \end{document}
