@@ -12,8 +12,18 @@
 \end{abstract}
 
 \chapter{Data Analysis and visualization}
+Loading of the data
+
+<<label="metricsNumberVertices", results='markup'>>=
+TODO
+@
+
 \section{Network statistics}
 Calculate different metrics and measures, e.g., number of vertices, number of edges and their weights, degree distribution (resp. in-degree and out-degree in the directed case), centrality indices, clustering coefficient, reciprocity, shortest paths, network diameter, density, number and size of connected components.
+
+<<label="metricsNumberVertices", results='markup'>>=
+TODO
+@
 
 \section{Communities}
 Identify communities/groups and their structure.
@@ -22,7 +32,8 @@ Identify communities/groups and their structure.
 Use different layouts to find and highlight patterns and relationships. To make sense of the data more easily, map the metrics and measures calculated onto visual properties such as size, colour, and opacity.
 
 \chapter{Longitudinal}
-How did the network change? What dynamics can beidentified? Are there critical events in the period observed?
+How did the network change? What dynamics can be
+identified? Are there critical events in the period observed?
 
 \chapter{Text analysis}
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
