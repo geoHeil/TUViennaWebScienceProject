@@ -28,8 +28,7 @@ ggnet2(g1, mode = "kamadakawai")
 # "summary" prints the number of vertices, edges and whether the graph is directed:
 summary(g1)
 
-# failure to calculate TODO
-degree(g1)
+summary(igraph::degree(g1))
 
 #number of vertices
 
