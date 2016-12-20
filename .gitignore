@@ -7,3 +7,6 @@ report.tex
 slides-figure
 slides.md
 .Rproj.user
+graph.graphml
+.Rhistory
+.RData
