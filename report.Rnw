@@ -13,23 +13,29 @@
 \end{abstract}
 
 \chapter{Data Analysis and visualisation}
-%<<label="metricsNumberVertices", %results='markup'>>=
-%TODO load the data here, make sure to not display any output
-%@
+<<librariesLoading, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=TRUE, message=FALSE>>=
+wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "ggthemr", "wordcloud", "tm", "stringr")
+has   <- wants %in% rownames(installed.packages())
+if(any(!has)) install.packages(wants[!has])
+lapply(wants, library, character.only=T)
+@
 \section{Overview}
 We chose to analyse a partial network of twitter with the hashtag \textbf{trump}.
 Our dataset contains \todo{how many records} records.
 The data was collected at \todo{specify points in time}.
 We chose to use the \hyperref{https://github.com/vosonlab/SocialMediaLab}{socialMediaLab} package to collect the data.
-It supports to generate 3 types of networks for the twitter data source
+It supports to generate several types of networks for our kind of data
 
 \begin{itemize}
   \item \textbf{bimodal} A user can comment or like a post. Therefor if user $i$ has liked and commented on a post two directed edges are created. The generated network is directed, weighted (\#ofComments), bipartite and contains multiple /parallel edges
-
-  \item \textbf{semantic} Nodes represent unique concepts (words) extracted from the set of tweets, edges represent the cooccurence of terms for all observations.
   
   \item \textbf{actor} Interactions (mention, reply, retweet) between twitter users show who is interacting with whom in relation to a particular hashtag
+  
+  \item \textbf{semantic} Nodes represent unique concepts (words) extracted from the set of tweets, edges represent the cooccurence of terms for all observations.
+  
 \end{itemize}
+
+Ego networks only work well out of the box with Instagram, dynamic networks with facebook. Semantic networks should work for this type of data source, however do not work for our data.
 
 We will compare these 3 networks for some metrics.
 
@@ -39,8 +45,43 @@ Basic statistics of the network are represented in this section.
 
 Calculate different metrics and measures, e.g., number of vertices, number of edges and their weights, degree distribution (resp. in-degree and out-degree in the directed case), centrality indices, clustering coefficient, reciprocity, shortest paths, network diameter, density, number and size of connected components.
 
-<<label="metricsNumberVertices", results='markup'>>=
-#TODO
+<<label="metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+load('tweets.Rdata')
+g_twitter_actor <- tweets %>% 
+  Create("Actor", writeToFile=FALSE)
+g_twitter_bimodal <- tweets %>% 
+  Create("Bimodal", writeToFile=FALSE)
+@
+
+And here the computation of the metrics \todo{set caching to true as soon as this is more stable}
+
+<<label="metricsNumberVertices", results='markup', cache=FALSE>>=
+calcStats <- function(graphName){
+  # "summary" prints the number of vertices,
+  #edges and whether the graph is directed: 
+  print("summary")
+  summary(graphName)  
+  
+  # Number of nodes and edges 
+  print("number of vertices")
+  vcount(graphName)
+  print("number of edges")
+  ecount(graphName)
+  
+  print(paste("graph is directed", is_directed(graphName)))
+  
+  print(paste("edge density", edge_density(graphName)))
+  
+  # TODO add all the stuff to this function
+  # TODO minim is to use print statements, if
+  # you want to get fancy returning an object 
+  # which allows a comparison chart
+  # or plots is cool
+  
+}
+
+calcStats(g_twitter_actor)
+calcStats(g_twitter_bimodal)
 @
 
 \section{Communities}

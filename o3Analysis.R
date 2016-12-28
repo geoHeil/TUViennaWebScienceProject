@@ -25,15 +25,15 @@ g_twitter_bimodal <- tweets %>% Create("Bimodal", writeToFile=TRUE)
 #bipartite (users can like or comment on posts, but posts can’t like or comment back)
 #multiple edges or parallel edges (we have one edge for each interaction from user i to post j)
 
-g_twitter_sem <- tweets %>% Create("Semantic", writeToFile=TRUE) # TODO check why this is no longer working !!!!!!!!!!!!
+#g_twitter_sem <- tweets %>% Create("Semantic", writeToFile=TRUE) # TODO check why this is no longer working !!!!!!!!!!!!
 # semantic network. In this network nodes represent unique concepts (in this case
 # unique terms/words extracted from a set of 150 tweets), and edges represent the co-occurrence of terms for allobservations in the data set. For example, for this Twitter semantic network, nodes represent either hashtags
 # (e.g. “#auspol”) or single terms (“politics”). If there are 150 tweets in the data set (i.e. 150 observations),
 #and the term auspol and the term politics  appear together in every tweet, then this would be represented
 #by an edge with weight equal to 150.
 
-g_twitter_semantic_reduced <- tweets %>%
-  Create("Semantic",termFreq=100,removeTermsOrHashtags=c("#trump"), writeToFile=TRUE) # this is a lot bigger # TODO check why this is no longer working !!!!!!!!!!!!
+#g_twitter_semantic_reduced <- tweets %>%
+  #Create("Semantic",termFreq=100,removeTermsOrHashtags=c("#trump"), writeToFile=TRUE) # this is a lot bigger # TODO check why this is no longer working !!!!!!!!!!!!
 # TODO compare network representations!!
 # TODO switch to instagram! dynamic network is supported
 
@@ -66,8 +66,8 @@ coolPlot <- function(graphName){
 coolPlot(g_twitter_actor)
 #plot(g_twitter_actor)
 coolPlot(g_twitter_bimodal)
-coolPlot(g_twitter_sem)
-coolPlot(g_twitter_semantic_reduced)
+#coolPlot(g_twitter_sem)
+#coolPlot(g_twitter_semantic_reduced)
 #################
 pageRankPerGraph <- function(graphName){
   pageRank_graph <- sort(page.rank(graphName)$vector,decreasing=TRUE)
@@ -96,16 +96,31 @@ communities_auspol[5]
 
 
 #############################################################################
-g1 <- g_twitter_actor
-# "summary" prints the number of vertices, edges and whether the graph is directed:
-summary(g1)
-# Number of nodes and edges 
-vcount(g1)
-ecount(g1)
-is_directed(g1)
+calcStats <- function(graphName){
+  # "summary" prints the number of vertices,
+  #edges and whether the graph is directed: 
+  print("summary")
+  summary(graphName)  
+  
+  # Number of nodes and edges 
+  print("number of vertices")
+  vcount(graphName)
+  print("number of edges")
+  ecount(graphName)
+  
+  print(paste("graph is directed", is_directed(graphName)))
+  
+  print(paste("edge density", edge_density(graphName)))
+  
+  # TODO add all the stuff to this function
+  # TODO minim is to use print statements, if
+  # you want to get fancy returning an object which allows a comparison chart
+  # or plots is cool
+  
+}
 
-# Edge density
-edge_density(g1)
+calcStats(g_twitter_actor)
+calcStats(g_twitter_bimodal)
 
 #  Average distance, diameter
 mean_distance(g1, directed=T)
