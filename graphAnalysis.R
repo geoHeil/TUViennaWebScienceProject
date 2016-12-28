@@ -1,7 +1,7 @@
 # Network analysis
 
 # setup the libraries
-wants <- c("GGally", "igraph", "ggplot2", "GGally", "dplyr", "readxl", "network", "sna", "intergraph", "ggthemr", "rgexf")
+wants <- c("GGally", "igraph", "ggplot2", "GGally", "dplyr", "readxl", "network", "sna", "intergraph", "ggthemr", "lubridate", "rgexf")
 has   <- wants %in% rownames(installed.packages())
 if(any(!has)) install.packages(wants[!has])
 lapply(wants, library, character.only=T)
@@ -11,7 +11,10 @@ ggthemr("fresh")
 
 # TODO set path for project relative / start a real Rstudio project
 # load the data
-tweets <- read_excel("data/tweets.xlsx")
+tweets <- read_delim("data/enriched.csv", ";", escape_double = FALSE, trim_ws = TRUE)
+tweets$time <- lubridate::as_datetime(tweets$time)
+tweets[is.na(tweets)] <- "unknown"
+df <- tweets
 
 # Convert edgelist into an igraph object; in this case the network is undirected 
 g1 <- graph.data.frame(tweets, directed = TRUE)

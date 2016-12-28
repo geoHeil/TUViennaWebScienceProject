@@ -1,28 +1,46 @@
 \documentclass[11pt]{report}
 
 \usepackage{todonotes}
+\usepackage{hyperref}
 \begin{document}
-\title{Web Science TU Vienna Terrorists graph analysis project}
-\author{me and you}
+\title{Web Science TU Vienna graph analysis project}
+\author{Georg Heiler 1225063 | Jasmina Kadic}
 \maketitle
 \tableofcontents
 
 \begin{abstract}
-	This is the abstract
+	Graph analysis of partial twitter network obtained by hashtag \textbf{trump}. \todo{TODO}
 \end{abstract}
 
-\chapter{Data Analysis and visualization}
-Loading of the data
+\chapter{Data Analysis and visualisation}
+%<<label="metricsNumberVertices", %results='markup'>>=
+%TODO load the data here, make sure to not display any output
+%@
+\section{Overview}
+We chose to analyse a partial network of twitter with the hashtag \textbf{trump}.
+Our dataset contains \todo{how many records} records.
+The data was collected at \todo{specify points in time}.
+We chose to use the \hyperref{https://github.com/vosonlab/SocialMediaLab}{socialMediaLab} package to collect the data.
+It supports to generate 3 types of networks for the twitter data source
 
-<<label="metricsNumberVertices", results='markup'>>=
-TODO
-@
+\begin{itemize}
+  \item \textbf{bimodal} A user can comment or like a post. Therefor if user $i$ has liked and commented on a post two directed edges are created. The generated network is directed, weighted (\#ofComments), bipartite and contains multiple /parallel edges
+
+  \item \textbf{semantic} Nodes represent unique concepts (words) extracted from the set of tweets, edges represent the cooccurence of terms for all observations.
+  
+  \item \textbf{actor} Interactions (mention, reply, retweet) between twitter users show who is interacting with whom in relation to a particular hashtag
+\end{itemize}
+
+We will compare these 3 networks for some metrics.
 
 \section{Network statistics}
+
+Basic statistics of the network are represented in this section.
+
 Calculate different metrics and measures, e.g., number of vertices, number of edges and their weights, degree distribution (resp. in-degree and out-degree in the directed case), centrality indices, clustering coefficient, reciprocity, shortest paths, network diameter, density, number and size of connected components.
 
 <<label="metricsNumberVertices", results='markup'>>=
-TODO
+#TODO
 @
 
 \section{Communities}
@@ -31,27 +49,33 @@ Identify communities/groups and their structure.
 \section{Visualization}
 Use different layouts to find and highlight patterns and relationships. To make sense of the data more easily, map the metrics and measures calculated onto visual properties such as size, colour, and opacity.
 
+Gephi was used for the visualization in Figure \ref{fig:plotActor}.
+as well as for Figure \ref{fig:plotBimodal}.
+
+\begin{figure}[h]
+  \centering
+  \caption{Actor graph for trump tweets with edges coded as retweet and mention}
+  \includegraphics[width=\textwidth]{slides-figure/g1actor1}
+  \label{fig:plotActor}
+\end{figure}
+\begin{figure}[h]
+  \centering
+  \caption{Bimodal graph for trump tweets}
+  \includegraphics[width=\textwidth]{slides-figure/g1bimodal1}
+  \label{fig:plotBimodal}
+\end{figure}
+
 \chapter{Longitudinal}
 How did the network change? What dynamics can be
 identified? Are there critical events in the period observed?
+
+\section{ego network analysis}
+\todo{ego network}
 
 \chapter{Text analysis}
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
 
 
-\chapter{Replacement for collection of data}
-
-%wie besprochen, falls Sie für das Projekt die Daten verwenden wollen, spricht nichts dagegen. 
-
-%Wenn sich Ihre Gruppe dazu entschließt, dann aber jedenfalls:
-%- die Daten und deren Kontext  genau beschreiben (Hintergrundinformation zum Setting und deskriptive Statistik vom ganzen Datensatz).
-%- falls Sie ein Teilsample zur Analyse auswählen, argumentieren, warum dieses Teilsample (deskriptive Statistik auch vom Sample).
-%- andere, die es zu den Daten schon gibt und die eventuell für die Analyse relevant sind, erwähnen und in die Diskussion/Interpretation einbeziehen.
-
-%Das muss alles nicht so ausführlich sein, aber Ziel sollte sein, ein guten Überblick zu geben.
-
-\todo{write about other kaggle solutions}
-foo bar super
 
 And here is a nice code chunk from R
 

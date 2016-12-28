@@ -2,7 +2,16 @@
 
 Group partners are:
   - Georg Heiler e1225063
-  - TODO
+  - Jasmina Kadić, eTODO
+
+*to collect data execute*
+```
+Rscript o1collectionSingle.R
+```
+
+*open things*
+  - check the code for `TODO` markers
+  - continue with assignemnt and report
 
 ## some good links
   - https://www.r-bloggers.com/analyze-twitter-data-using-r/
