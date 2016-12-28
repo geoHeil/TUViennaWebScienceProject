@@ -13,7 +13,7 @@
 \end{abstract}
 
 \chapter{Data Analysis and visualisation}
-<<librariesLoading, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=TRUE, message=FALSE>>=
+<<librariesLoading, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=FALSE, message=FALSE>>=
 wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "ggthemr", "wordcloud", "tm", "stringr")
 has   <- wants %in% rownames(installed.packages())
 if(any(!has)) install.packages(wants[!has])
