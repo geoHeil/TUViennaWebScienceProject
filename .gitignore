@@ -4,7 +4,6 @@ report.synctex.gz
 report.toc
 cache
 report.tex
-slides-figure
 slides.md
 .Rproj.user
 graph.graphml
