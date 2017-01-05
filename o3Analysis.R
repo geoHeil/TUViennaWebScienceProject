@@ -99,103 +99,88 @@ communities_auspol[5]
 calcStats <- function(graphName){
   # "summary" prints the number of vertices,
   #edges and whether the graph is directed: 
-  print("summary")
+  print("Summary")
   summary(graphName)  
   
   # Number of nodes and edges 
-  print("number of vertices")
+  print("Number of vertices")
   vcount(graphName)
-  print("number of edges")
+  print("Number of edges")
   ecount(graphName)
+  print(paste("Graph is directed", is_directed(graphName)))
+  print(paste("Edge density:", edge_density(graphName)))
+  print(paste("Average distance:", mean_distance(graphName, directed=T)))
+  print(paste("Diameter:", diameter(graphName, directed=T)))
+  print(paste("Reciprocity: ",  reciprocity(graphName, ignore.loops = TRUE, mode = c("default", "ratio"))))
+
   
-  print(paste("graph is directed", is_directed(graphName)))
+ # Degree distribution (in-degree,out-degree)
+  deg <- igraph::degree(graphName)
+  print(paste("Average degree:", mean(deg) ))
+  deg_in <- igraph::degree(graphName, mode = "in")
+  deg_out <- igraph::degree(graphName, mode = "out")
+  print(paste("Average in-degree:",mean(deg_in) ))
+  print(paste("Average out-degree:", mean(deg_out)))
   
-  print(paste("edge density", edge_density(graphName)))
+  print("In-degree centrality (from highest to lowest)")
+  sort(deg_in, decreasing = T)[1:10]
+  print("Out-degree centrality (from highest to lowest)")
+  sort(deg_out, decreasing = T)[1:10]
+
+# Eigenvector centrality
+  eig <- eigen_centrality(graphName, directed=T)$vector
+  print("Eigenvector centrality (from highest to lowest)")
+  sort(eig, decreasing = T)[1:10] 
+
+#  Closeness centrality
+  clos_in <- igraph::closeness(graphName, mode = "in") 
+  print("In-closeness centrality (from highest to lowest)"))
+  sort(clos_in, decreasing = T)[1:10]
+  clos_out <- igraph::closeness(graphName, mode = "out") 
+  print("Out-closeness centrality (from highest to lowest)")
+  sort(clos_out, decreasing = T)[1:10]
+
+# Betweeness centrality
+  betw <- igraph::betweenness(graphName, directed=T) 
+  print("Betweeness centrality (from highest to lowest)")
+  sort(betw, decreasing = T)[1:10]
+
+# Hubs and Authorities
+  hs <- hub_score(graphName)$vector
+  print("Hub scores(from highest to lowest)")
+  sort(hs, decreasing = T)[1:10]
+
+  as <- authority_score(graphName)$vector
+  print("Authoritie scores(from highest to lowest)")
+  sort(as, decreasing = T)[1:10]
+
+  # PageRank
+   pr<-page_rank(graphName, algo = c("prpack", "arpack", "power"), vids = V(graphName),
+         directed = TRUE, damping = 0.85, personalized = NULL, weights = NULL,
+         options = NULL)$vector
+    print("Page rank (from highest to lowest)")
+    sort(pr, decreasing = T)[1:10]
+
+# Number and sizes of connected components
+  print(paste("Number of connected components:", igraph::components(graphName)$no))
+  print("Sizes of connected components: ")
+  igraph::components(graphName)$csize
+
+#Transitivity measures the probability that the adjacent vertices of a vertex are connected.
+#This is sometimes also called the clustering coefficient. 
+  print("Clustering coefficient (type=local)")
+  lcoef <- transitivity(graphName, type = "local")
+  tail(table(clcoef))
+  print(paste("Clustering coefficient, (type=global):", transitivity(graphName, type = "global"))) 
+  print(paste("Clustering coefficient, (type=average):", transitivity(graphName, type = "average"))) 
+
   
-  # TODO add all the stuff to this function
-  # TODO minim is to use print statements, if
-  # you want to get fancy returning an object which allows a comparison chart
-  # or plots is cool
   
 }
 
 calcStats(g_twitter_actor)
 calcStats(g_twitter_bimodal)
 
-#  Average distance, diameter
-mean_distance(g1, directed=T)
-diameter(g1, directed=T)
-
-# Degree distribution (in-degree,out-degree)
-deg <- igraph::degree(g1)
-summary(deg)
-mean(deg)
-
-deg_in <- igraph::degree(g1, mode = "in")
-deg_out <- igraph::degree(g1, mode = "out")
-
-mean(deg_in)
-mean(deg_out)
-
-# Centrality indices (degree, eigenvector, closeness, betweeness)
-# Degree centrylity
-sort(deg_in, decreasing = T)[1:10]
-sort(deg_out, decreasing = T)[1:10]
-
-# Eigenvector centrality ######################  not applicable for directed graph, warning that all are 000
-#eig <- eigen_centrality(g1, directed=T)$vector
-#sort(eig, decreasing = T)[1:10] 
-
-# Closeness centrality
-clos_in <- igraph::closeness(g1, mode = "in") 
-sort(clos_in, decreasing = T)[1:10]
-clos_out <- igraph::closeness(g1, mode = "out") 
-sort(clos_out, decreasing = T)[1:10]
-
-######################## Results!?!
-# Betweeness centrality
-betw <- igraph::betweenness(g1, directed=T) 
-sort(betw, decreasing = T)[1:10]
-
-# Hubs and Authorities
-hs <- hub_score(g1)$vector
-sort(hs, decreasing = T)[1:10]
-
-as <- authority_score(g1)$vector
-sort(as, decreasing = T)[1:10]
-
-# PageRank
-pr<-page_rank(g1, algo = c("prpack", "arpack", "power"), vids = V(g1),
-              directed = TRUE, damping = 0.85, personalized = NULL, weights = NULL,
-              options = NULL)$vector
-sort(pr, decreasing = T)[1:10]
-# Clustering coefficiant
-
-# Reciprocity
-# The measure of reciprocity defines the proporsion of mutual connections, in a directed graph. 
-# It is most commonly defined as the probability that the opposite counterpart of a directed edge
-# is also included in the graph.
-# Value:  A numeric scalar between zero and one. 
-reciprocity(g1, ignore.loops = TRUE, mode = c("default", "ratio"))
-# value for tweets: 0  ?!?
-# Shortest paths
-
-# Density
-edge_density(g1)
-
-# Number and sizes of connected components
-igraph::components(g1)$no
-igraph::components(g1)$csize
-############################################################################
-# Communities
-
-# Clique ?!?
-igraph::clique_num(g1) #warning
-
-# K-core ?!?
-kcores <- coreness(g1)
-head(kcores)
-table(kcores)
 
 ##################### wordcloud  
 #tweetsCloud <- tweets
