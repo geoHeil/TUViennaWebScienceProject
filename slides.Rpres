@@ -26,3 +26,15 @@ iphone analysis who is tweeting
 ```{r, echo=FALSE}
 plot(cars)
 ```
+
+
+how the data was collected
+========================================================
+
+- socialMediaLab package
+
+
+reproducible research
+========================================================
+
+- latex, knitR, rMarkdown

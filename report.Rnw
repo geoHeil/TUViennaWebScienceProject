@@ -21,8 +21,8 @@ lapply(wants, library, character.only=T)
 @
 \section{Overview}
 We chose to analyse a partial network of twitter with the hashtag \textbf{trump}.
-Our dataset contains \todo{how many records} records.
-The data was collected at \todo{specify points in time}.
+The data was collected at two points in time. Once early December, the second time early January. Both times around 18000 tweets were collected (which represent the maximum number of tweets which can be retrieved at once before hitting the API limit).
+
 We chose to use the \hyperref{https://github.com/vosonlab/SocialMediaLab}{socialMediaLab} package to collect the data.
 It supports to generate several types of networks for our kind of data
 
@@ -47,7 +47,7 @@ Calculate different metrics and measures, e.g., number of vertices, number of ed
 
 Additionally, communities  and centrality metrics are analyzed.
 
-<<label="metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+<<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
 load('tweets.Rdata')
 g_twitter_actor <- tweets %>% 
   Create("Actor", writeToFile=FALSE)
@@ -162,7 +162,7 @@ For the bimodal graph statistics are
 calcStats(g_twitter_bimodal)
 @
 
-The bimodal graph contains a lot more edges ie. is bigger. \todo{summary}
+The bimodal graph contains a lot more edges ie. is bigger. \todo{summary, TODO compare graphs}
 
 \section{Visualization}
 Use different layouts to find and highlight patterns and relationships. To make sense of the data more easily, map the metrics and measures calculated onto visual properties such as size, colour, and opacity.
@@ -183,7 +183,7 @@ as well as for Figure \ref{fig:plotBimodal}.
   \label{fig:plotBimodal}
 \end{figure}
 
-\todo{more visualization and description of the plots}
+\todo{Add description to the plots}
 
 \chapter{Longitudinal}
 How did the network change? What dynamics can be
@@ -191,7 +191,7 @@ identified? Are there critical events in the period observed?
 
 The same metrics as before are computed now, but for a new dataset collected several weeks later.
 loading of the new data
-<<label="longLoading", results='markup', cache=TRUE>>=
+<<label="0keep_longLoading", results='markup', cache=TRUE>>=
 load('tweets2.Rdata')
 g_twitter_actor <- tweets %>% 
   Create("Actor", writeToFile=FALSE)
@@ -210,81 +210,23 @@ calcStats(g_twitter_bimodal)
 @
 
 
-\todo{summary}
+\todo{summary and comparison with original data}
 some summary
 
 \section{ego network analysis}
-\todo{ego network}
+\todo{add ego network visualization from gephi}
 
 \chapter{Text analysis}
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
+\todo{compare text analysis per group}
 
-<<label="textanalysis1", results='markup', cache=TRUE>>=
-tweets <- read.csv("data/trumpTweets.csv")
-
-ggplot(tweets, aes(factor(grepl("#",tweets$text)))) +
-        geom_bar(fill = "midnightblue") + 
-        theme(legend.position="none", axis.title.x
-              = element_blank()) + 
-  ylab("Number of tweets") + 
-  ggtitle("Tweets with Hashtags") +
-  scale_x_discrete(labels=c("No hashtags",
-                            "Tweets with hashtags"))
-
-ggplot(tweets, aes(factor(grepl('^"', tweets$text)))) +
-        geom_bar(fill = "midnightblue") + 
-        theme(legend.position="none",
-              axis.title.x =element_blank()) +
-        ylab("Number of tweets") + 
-        ggtitle("Tweets with quatation mark") +
-        scale_x_discrete(labels=c("No quatation mark",
-                                  "Tweets with quatation mark"))
-
-tweets$created <- ymd_hms(tweets$created)
-
-ggplot(data = tweets, aes(x = created)) +
-        geom_histogram(aes(fill = ..count..)) +
-        theme(legend.position = "none") +
-        xlab("Time") + ylab("Number of tweets") + 
-        scale_fill_gradient(low = "midnightblue",
-                            high = "aquamarine4")
-@
-
-Wordcloud
-\todo{filter data more}
-
-<<label="termsx", results='markup', cache=TRUE>>=
-wordCorpus <- Corpus(VectorSource(tweets))
-wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
-
-wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
-
-tdm <- TermDocumentMatrix(wordCorpus, control = list(wordLengths = c(1, Inf)))
-(freq.terms <- findFreqTerms(tdm, lowfreq = 20))
-term.freq <- rowSums(as.matrix(tdm))
-term.freq <- subset(term.freq, term.freq >= 20)
-df <- data.frame(term = names(term.freq), freq = term.freq)
-ggplot(df, aes(x=term, y=freq)) + geom_bar(stat="identity") + xlab("Terms") + ylab("Count") + coord_flip() 
-
-m <- as.matrix(tdm)
-word.freq <- sort(rowSums(m), decreasing = T)
-pal <- brewer.pal(9, "BuGn")[-(1:4)]
-
-wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3, random.order = F, colors = pal)
-@
-
-Analysis of devices
-
-we try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an android device, most of the others are using iOS devices. 
-
+We try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an android device, most of the others are using iOS devices. 
 We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted their approach for our data.
 You can see the times when a tweet is posted form an android or ios device
-<<label="terms", results='markup', cache=TRUE>>=
-library(readr)
+<<terms123, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=FALSE, message=FALSE>>=
 tweets3 <- read_csv("tweets3.csv")
+@
+<<label="terms", results='markup', cache=TRUE>>=
 tweetsSmall <- tweets3 %>%
   select(id, statusSource, text, created) %>%
   extract(statusSource, "source", "Twitter for (.*?)<") %>%
@@ -329,7 +271,7 @@ tweetsSmall %>%
 Frequently tweeted words
 <<label="terms4", results='markup', cache=TRUE>>=
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
-tweet_words <- tweets %>%
+tweet_words <- tweetsSmall %>%
   filter(!str_detect(text, '^"')) %>%
   mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
   unnest_tokens(word, text, token = "regex", pattern = reg) %>%
@@ -371,19 +313,64 @@ android_iphone_ratios %>%
                     values = c("red", "lightblue"))
 @
 
-- iphone is using more hashtags
-- emotional words e.g. idiot, moron, ... are only common on android devices
+  - iphone is using more hashtags
+  - emotional words e.g. idiot, moron, ... are only common on android devices
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% disabled because was very slow. Strange should have been quicker to compute.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%<<label="wordcloud", results='markup', cache=TRUE>>=
+%wordCorpus <- Corpus(VectorSource(tweet_words))
+%tdm <- TermDocumentMatrix(wordCorpus,
+%              control = list(wordLengths = c(1, Inf)))
+%term.freq <- rowSums(as.matrix(tdm))
+%term.freq <- subset(term.freq, term.freq >= 20)
+%df <- data.frame(term = names(term.freq), freq = term.freq)
+%m <- as.matrix(tdm)
+%word.freq <- sort(rowSums(m), decreasing = T)
+%pal <- brewer.pal(9, "BuGn")[-(1:4)]
+
+%wordcloud(words = names(word.freq),
+%          freq = word.freq,
+          %min.freq = 3,
+          %random.order = F,
+          %colors = pal)
+%@
 
 As \url{http://varianceexplained.org/r/trump-tweets/} this could be accomplised by a sentiment analysis. But it is already pretty clear that some devices use a very different language.
 
 \todo{description}
 
-<<label="textanalysis2", results='markup', cache=TRUE>>=
-ggplot(data = tweets, aes(x = wday(created))) +
-        geom_histogram(breaks = seq(0.5, 8, by =1), aes(fill = ..count..)) +
+The number of tweets over time
+<<label="textanalysis1", results='markup', cache=TRUE>>=
+tweets <- read.csv("data/trumpTweets.csv")
+tweets$created <- ymd_hms(tweets$created)
+ggplot(data = tweets, aes(x = created)) +
+        geom_histogram(aes(fill = ..count..)) +
         theme(legend.position = "none") +
-        xlab("Day of the Week") + ylab("Number of tweets") + 
-        scale_fill_gradient(low = "midnightblue", high = "aquamarine4")
+        xlab("Time") + ylab("Number of tweets") + 
+        scale_fill_gradient(low = "midnightblue",
+                            high = "aquamarine4")
+@
+
+Wordcloud
+\todo{filter data more}
+
+<<label="termsx", results='markup', cache=TRUE>>=
+wordCorpus <- Corpus(VectorSource(tweets))
+wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
+
+wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
+
+tdm <- TermDocumentMatrix(wordCorpus, control = list(wordLengths = c(1, Inf)))
+m <- as.matrix(tdm)
+word.freq <- sort(rowSums(m), decreasing = T)
+pal <- brewer.pal(9, "BuGn")[-(1:4)]
+
+wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3, random.order = F, colors = pal)
 @
 
 \chapter{Discussion and conclusion}
@@ -391,12 +378,19 @@ What about the quality of the data? What are the limitations? What questions can
 
 The quality of the data is rather good. Without the `SocialMediaLab` package for R it would have been complex to generate the graph from the collected tweets. With  it this was an easy task and we were able to compute several "views" e.g. an actor and a bimodal graph from the same type of underlying data.
 
-\todo{todo}
+The twitter graph data contains a lot of columns
+<<label="colnames", results='markup', cache=TRUE>>=
+colnames(tweets3)
+@
+which specify when, what and how e.g. by which device something was tweeted, as well as the type of tweet (mention, retweet).
+
+
+\todo{todo answer her questions}
 
 \chapter{other things}
-report
+report (nearly complete)
 
-code
+code (included in report)
 
-presentation
+presentation \todo{prepare, I suggest sort of interactive mode}
 \end{document}
