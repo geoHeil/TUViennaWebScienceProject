@@ -39,11 +39,13 @@ Ego networks only work well out of the box with Instagram, dynamic networks with
 
 We will compare these 3 networks for some metrics.
 
-\section{Network statistics}
+\section{Network statistics and communities}
 
 Basic statistics of the network are represented in this section.
 
 Calculate different metrics and measures, e.g., number of vertices, number of edges and their weights, degree distribution (resp. in-degree and out-degree in the directed case), centrality indices, clustering coefficient, reciprocity, shortest paths, network diameter, density, number and size of connected components.
+
+Additionally, communities  and centrality metrics are analyzed.
 
 <<label="metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
 load('tweets.Rdata')
@@ -53,26 +55,28 @@ g_twitter_bimodal <- tweets %>%
   Create("Bimodal", writeToFile=FALSE)
 @
 
-And here the computation of the metrics \todo{set caching to true as soon as this is more stable}
+And here the computation of the metrics. We define the following function to compute them:
 
-<<label="metricsNumberVertices", results='markup', cache=FALSE>>=
+<<label="metricsNumberVertices", results='markup', cache=TRUE>>=
 calcStats <- function(graphName){
+  # "summary" prints the number of vertices,
+  #edges and whether the graph is directed: 
   print("Summary")
   summary(graphName)  
   
   # Number of nodes and edges 
-  print("Number of vertices")
-  vcount(graphName)
-  print("Number of edges")
-  ecount(graphName)
+  print(paste("Number of vertices:", vcount(graphName)))
+  print(paste("Number of edges:", ecount(graphName)))
   print(paste("Graph is directed", is_directed(graphName)))
   print(paste("Edge density:", edge_density(graphName)))
-  print(paste("Average distance:", mean_distance(graphName, directed=T)))
+  print(paste("Average distance:",
+              mean_distance(graphName, directed=T)))
   print(paste("Diameter:", diameter(graphName, directed=T)))
-  print(paste("Reciprocity: ",  reciprocity(graphName, ignore.loops = TRUE, mode = c("default", "ratio"))))
-
+  print(paste("Reciprocity: ",
+              reciprocity(graphName, ignore.loops =TRUE,
+                          mode = c("default", "ratio"))))
   
- # Degree distribution (in-degree,out-degree)
+  # Degree distribution (in-degree,out-degree)
   deg <- igraph::degree(graphName)
   print(paste("Average degree:", mean(deg) ))
   deg_in <- igraph::degree(graphName, mode = "in")
@@ -81,68 +85,84 @@ calcStats <- function(graphName){
   print(paste("Average out-degree:", mean(deg_out)))
   
   print("In-degree centrality (from highest to lowest)")
-  sort(deg_in, decreasing = T)[1:10]
+  print(sort(deg_in, decreasing = T)[1:10])
   print("Out-degree centrality (from highest to lowest)")
-  sort(deg_out, decreasing = T)[1:10]
-
-# Eigenvector centrality
+  print(sort(deg_out, decreasing = T)[1:10])
+  
+  # Eigenvector centrality
   eig <- eigen_centrality(graphName, directed=T)$vector
   print("Eigenvector centrality (from highest to lowest)")
-  sort(eig, decreasing = T)[1:10] 
-
-#  Closeness centrality
+  print(sort(eig, decreasing = T)[1:10] )
+  
+  #  Closeness centrality
   clos_in <- igraph::closeness(graphName, mode = "in") 
-  print("In-closeness centrality (from highest to lowest)"))
-  sort(clos_in, decreasing = T)[1:10]
+  print("In-closeness centrality (from highest to lowest)")
+  print(sort(clos_in, decreasing = T)[1:10])
   clos_out <- igraph::closeness(graphName, mode = "out") 
   print("Out-closeness centrality (from highest to lowest)")
-  sort(clos_out, decreasing = T)[1:10]
+  print(sort(clos_out, decreasing = T)[1:10])
 
-# Betweeness centrality
+  # Betweeness centrality
   betw <- igraph::betweenness(graphName, directed=T) 
   print("Betweeness centrality (from highest to lowest)")
-  sort(betw, decreasing = T)[1:10]
+  print(sort(betw, decreasing = T)[1:10])
 
-# Hubs and Authorities
+  # Hubs and Authorities
   hs <- hub_score(graphName)$vector
   print("Hub scores(from highest to lowest)")
-  sort(hs, decreasing = T)[1:10]
+  print(sort(hs, decreasing = T)[1:10])
 
   as <- authority_score(graphName)$vector
   print("Authoritie scores(from highest to lowest)")
-  sort(as, decreasing = T)[1:10]
+  print(sort(as, decreasing = T)[1:10])
 
   # PageRank
-   pr<-page_rank(graphName, algo = c("prpack", "arpack", "power"), vids = V(graphName),
-         directed = TRUE, damping = 0.85, personalized = NULL, weights = NULL,
-         options = NULL)$vector
-    print("Page rank (from highest to lowest)")
-    sort(pr, decreasing = T)[1:10]
+  pr<-page_rank(graphName, algo =
+                  c("prpack", "arpack", "power"),
+                vids = V(graphName),
+              directed = TRUE,
+              damping = 0.85,
+              personalized = NULL,
+              weights = NULL,
+              options = NULL)$vector
+  print("Page rank (from highest to lowest)")
+  print(sort(pr, decreasing = T)[1:10])
 
-# Number and sizes of connected components
-  print(paste("Number of connected components:", igraph::components(graphName)$no))
-  print("Sizes of connected components: ")
-  igraph::components(graphName)$csize
+  # Number and sizes of connected components
+  print(paste("Number of connected components:",
+              igraph::components(graphName)$no))
+  print("Sizes of connected components:")
+  print(summary(igraph::components(graphName)$csize))
+  # unfortunately graph will not show up in function
+  # qplot(igraph::components(graphName)$csize,
+  # geom="histogram", binwidth = 100,
+  # main="Sizes of connected components")
 
-#Transitivity measures the probability that the adjacent vertices of a vertex are connected.
-#This is sometimes also called the clustering coefficient. 
+  # Transitivity measures the probability
+  # that the adjacent vertices of a vertex are connected.
+  # This is sometimes also called the clustering coefficient. 
   print("Clustering coefficient (type=local)")
-  lcoef <- transitivity(graphName, type = "local")
-  tail(table(clcoef))
-  print(paste("Clustering coefficient, (type=global):", transitivity(graphName, type = "global"))) 
-  print(paste("Clustering coefficient, (type=average):", transitivity(graphName, type = "average"))) 
-
-  
-  
-  
+  clcoef <- transitivity(graphName, type = "local")
+  print(tail(table(clcoef)))
+  print(paste("Clustering coefficient, (type=global):",
+              transitivity(graphName, type = "global"))) 
+  print(paste("Clustering coefficient, (type=average):",
+              transitivity(graphName, type = "average"))) 
 }
+@
 
+For the actor graph statistics are
+
+<<label="metricsNumberVerticesActor", results='markup', cache=TRUE>>=
 calcStats(g_twitter_actor)
+@
+
+For the bimodal graph statistics are
+<<label="metricsNumberVerticesBimodal", results='markup', cache=TRUE>>=
 calcStats(g_twitter_bimodal)
 @
 
-\section{Communities}
-Identify communities/groups and their structure.
+The bimodal graph contains a lot more edges ie. is bigger. \todo{summary}
 
 \section{Visualization}
 Use different layouts to find and highlight patterns and relationships. To make sense of the data more easily, map the metrics and measures calculated onto visual properties such as size, colour, and opacity.
@@ -163,9 +183,35 @@ as well as for Figure \ref{fig:plotBimodal}.
   \label{fig:plotBimodal}
 \end{figure}
 
+\todo{more visualization and description of the plots}
+
 \chapter{Longitudinal}
 How did the network change? What dynamics can be
 identified? Are there critical events in the period observed?
+
+The same metrics as before are computed now, but for a new dataset collected several weeks later.
+loading of the new data
+<<label="longLoading", results='markup', cache=TRUE>>=
+load('tweets2.Rdata')
+g_twitter_actor <- tweets %>% 
+  Create("Actor", writeToFile=FALSE)
+g_twitter_bimodal <- tweets %>% 
+  Create("Bimodal", writeToFile=FALSE)
+@
+
+For the actoor
+<<label="actorLong", results='markup', cache=TRUE>>=
+calcStats(g_twitter_actor)
+@
+
+and  for the bimodal version of the graph
+<<label="bimodalLong", results='markup', cache=TRUE>>=
+calcStats(g_twitter_bimodal)
+@
+
+
+\todo{summary}
+some summary
 
 \section{ego network analysis}
 \todo{ego network}
@@ -173,32 +219,17 @@ identified? Are there critical events in the period observed?
 \chapter{Text analysis}
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
 
-
-
-And here is a nice code chunk from R
-
-<<label="Test", results='markup'>>=
-variable1 <- 1
-variable2 = 2
-hello_txt <- "Hello world" # just to illustrate the markup
+<<label="textanalysis", results='markup', cache=TRUE>>=
+# TODO add wordcoloud here
 @
 
-Thats all! foo bar
-
-silent load of library
-
-<<libraries, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache.lazy=FALSE, message=FALSE>>=
-library(MASS)
-library(memisc)
-1+1
-@
-check out sweave documentation for details
-
-\textsf{smallRExample.Rnw}
-and more text
 
 \chapter{Discussion and conclusion}
 What about the quality of the data? What are the limitations? What questions can be answered and what new insights can be gained by analyzing the structure of the networks? What nodes are in strategic locations? What can you tell about the communities identified? What do you learn by looking at the different networks? Why is it interesting to combine the information from structural and textual data? Interpret and discuss your findings!
+
+The quality of the data is rather good. Without the `SocialMediaLab` package for R it would have been complex to generate the graph from the collected tweets. With  it this was an easy task and we were able to compute several "views" e.g. an actor and a bimodal graph from the same type of underlying data.
+
+\todo{todo}
 
 \chapter{other things}
 report

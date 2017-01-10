@@ -46,7 +46,7 @@ coolPlot <- function(graphName){
   
   # plot
   par(bg="gray15", mar=c(1,1,1,1))
-  plot(graphName, layout=glay,
+  plot(graphName, layout=igraph::layout.fruchterman.reingold,
        vertex.color="gray25",
        vertex.size=10,
        vertex.label=ver_labs,
@@ -62,7 +62,8 @@ coolPlot <- function(graphName){
   title("some network",
         cex.main=1, col.main="gray95")
 }
-
+plot(simplify(g_twitter_actor, remove.multiple = F, remove.loops = T),
+     layout=igraph::layout.fruchterman.reingold)
 coolPlot(g_twitter_actor)
 #plot(g_twitter_actor)
 coolPlot(g_twitter_bimodal)
@@ -103,18 +104,18 @@ calcStats <- function(graphName){
   summary(graphName)  
   
   # Number of nodes and edges 
-  print("Number of vertices")
-  vcount(graphName)
-  print("Number of edges")
-  ecount(graphName)
+  print(paste("Number of vertices:", vcount(graphName)))
+  print(paste("Number of edges:", ecount(graphName)))
   print(paste("Graph is directed", is_directed(graphName)))
   print(paste("Edge density:", edge_density(graphName)))
-  print(paste("Average distance:", mean_distance(graphName, directed=T)))
+  print(paste("Average distance:",
+              mean_distance(graphName, directed=T)))
   print(paste("Diameter:", diameter(graphName, directed=T)))
-  print(paste("Reciprocity: ",  reciprocity(graphName, ignore.loops = TRUE, mode = c("default", "ratio"))))
-
+  print(paste("Reciprocity: ",
+              reciprocity(graphName, ignore.loops =TRUE,
+                          mode = c("default", "ratio"))))
   
- # Degree distribution (in-degree,out-degree)
+  # Degree distribution (in-degree,out-degree)
   deg <- igraph::degree(graphName)
   print(paste("Average degree:", mean(deg) ))
   deg_in <- igraph::degree(graphName, mode = "in")
@@ -123,64 +124,73 @@ calcStats <- function(graphName){
   print(paste("Average out-degree:", mean(deg_out)))
   
   print("In-degree centrality (from highest to lowest)")
-  sort(deg_in, decreasing = T)[1:10]
+  print(sort(deg_in, decreasing = T)[1:10])
   print("Out-degree centrality (from highest to lowest)")
-  sort(deg_out, decreasing = T)[1:10]
-
-# Eigenvector centrality
+  print(sort(deg_out, decreasing = T)[1:10])
+  
+  # Eigenvector centrality
   eig <- eigen_centrality(graphName, directed=T)$vector
   print("Eigenvector centrality (from highest to lowest)")
-  sort(eig, decreasing = T)[1:10] 
-
-#  Closeness centrality
+  print(sort(eig, decreasing = T)[1:10] )
+  
+  #  Closeness centrality
   clos_in <- igraph::closeness(graphName, mode = "in") 
-  print("In-closeness centrality (from highest to lowest)"))
-  sort(clos_in, decreasing = T)[1:10]
+  print("In-closeness centrality (from highest to lowest)")
+  print(sort(clos_in, decreasing = T)[1:10])
   clos_out <- igraph::closeness(graphName, mode = "out") 
   print("Out-closeness centrality (from highest to lowest)")
-  sort(clos_out, decreasing = T)[1:10]
-
-# Betweeness centrality
+  print(sort(clos_out, decreasing = T)[1:10])
+  
+  # Betweeness centrality
   betw <- igraph::betweenness(graphName, directed=T) 
   print("Betweeness centrality (from highest to lowest)")
-  sort(betw, decreasing = T)[1:10]
-
-# Hubs and Authorities
+  print(sort(betw, decreasing = T)[1:10])
+  
+  # Hubs and Authorities
   hs <- hub_score(graphName)$vector
   print("Hub scores(from highest to lowest)")
-  sort(hs, decreasing = T)[1:10]
-
+  print(sort(hs, decreasing = T)[1:10])
+  
   as <- authority_score(graphName)$vector
   print("Authoritie scores(from highest to lowest)")
-  sort(as, decreasing = T)[1:10]
-
+  print(sort(as, decreasing = T)[1:10])
+  
   # PageRank
-   pr<-page_rank(graphName, algo = c("prpack", "arpack", "power"), vids = V(graphName),
-         directed = TRUE, damping = 0.85, personalized = NULL, weights = NULL,
-         options = NULL)$vector
-    print("Page rank (from highest to lowest)")
-    sort(pr, decreasing = T)[1:10]
-
-# Number and sizes of connected components
-  print(paste("Number of connected components:", igraph::components(graphName)$no))
-  print("Sizes of connected components: ")
-  igraph::components(graphName)$csize
-
-#Transitivity measures the probability that the adjacent vertices of a vertex are connected.
-#This is sometimes also called the clustering coefficient. 
+  pr<-page_rank(graphName, algo =
+                  c("prpack", "arpack", "power"),
+                vids = V(graphName),
+                directed = TRUE,
+                damping = 0.85,
+                personalized = NULL,
+                weights = NULL,
+                options = NULL)$vector
+  print("Page rank (from highest to lowest)")
+  print(sort(pr, decreasing = T)[1:10])
+  
+  # Number and sizes of connected components
+  print(paste("Number of connected components:",
+              igraph::components(graphName)$no))
+  print("Sizes of connected components:")
+  print(summary(igraph::components(graphName)$csize))
+  # unfortunately graph will not show up in function
+  # qplot(igraph::components(graphName)$csize,
+  # geom="histogram", binwidth = 100,
+  # main="Sizes of connected components")
+  
+  # Transitivity measures the probability
+  # that the adjacent vertices of a vertex are connected.
+  # This is sometimes also called the clustering coefficient. 
   print("Clustering coefficient (type=local)")
-  lcoef <- transitivity(graphName, type = "local")
-  tail(table(clcoef))
-  print(paste("Clustering coefficient, (type=global):", transitivity(graphName, type = "global"))) 
-  print(paste("Clustering coefficient, (type=average):", transitivity(graphName, type = "average"))) 
-
-  
-  
+  clcoef <- transitivity(graphName, type = "local")
+  print(tail(table(clcoef)))
+  print(paste("Clustering coefficient, (type=global):",
+              transitivity(graphName, type = "global"))) 
+  print(paste("Clustering coefficient, (type=average):",
+              transitivity(graphName, type = "average"))) 
 }
 
 calcStats(g_twitter_actor)
 calcStats(g_twitter_bimodal)
-
 
 ##################### wordcloud  
 #tweetsCloud <- tweets

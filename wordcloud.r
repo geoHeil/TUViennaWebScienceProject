@@ -5,7 +5,7 @@ library(stringr)
 library(wordcloud)
 library(readxl)
 
-tweets <- read_excel("data/tweets.xlsx")
+#tweets <- read_excel("data/tweets.xlsx")
 
 nohandles <- str_replace_all(tweets$tweets, "@\\w+", "") # just plain english words
 wordCorpus <- Corpus(VectorSource(nohandles))
