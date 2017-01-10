@@ -14,7 +14,7 @@
 
 \chapter{Data Analysis and visualisation}
 <<librariesLoading, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=FALSE, message=FALSE>>=
-wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr")
+wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr", "readr", "tidytext")
 has   <- wants %in% rownames(installed.packages())
 if(any(!has)) install.packages(wants[!has])
 lapply(wants, library, character.only=T)
@@ -224,17 +224,21 @@ tweets <- read.csv("data/trumpTweets.csv")
 
 ggplot(tweets, aes(factor(grepl("#",tweets$text)))) +
         geom_bar(fill = "midnightblue") + 
-        theme(legend.position="none", axis.title.x = element_blank()) +
-        ylab("Number of tweets") + 
-        ggtitle("Tweets with Hashtags") +
-        scale_x_discrete(labels=c("No hashtags", "Tweets with hashtags"))
+        theme(legend.position="none", axis.title.x
+              = element_blank()) + 
+  ylab("Number of tweets") + 
+  ggtitle("Tweets with Hashtags") +
+  scale_x_discrete(labels=c("No hashtags",
+                            "Tweets with hashtags"))
 
 ggplot(tweets, aes(factor(grepl('^"', tweets$text)))) +
         geom_bar(fill = "midnightblue") + 
-        theme(legend.position="none", axis.title.x = element_blank()) +
+        theme(legend.position="none",
+              axis.title.x =element_blank()) +
         ylab("Number of tweets") + 
         ggtitle("Tweets with quatation mark") +
-        scale_x_discrete(labels=c("No quatation mark", "Tweets with quatation mark"))
+        scale_x_discrete(labels=c("No quatation mark",
+                                  "Tweets with quatation mark"))
 
 tweets$created <- ymd_hms(tweets$created)
 
@@ -242,13 +246,14 @@ ggplot(data = tweets, aes(x = created)) +
         geom_histogram(aes(fill = ..count..)) +
         theme(legend.position = "none") +
         xlab("Time") + ylab("Number of tweets") + 
-        scale_fill_gradient(low = "midnightblue", high = "aquamarine4")
+        scale_fill_gradient(low = "midnightblue",
+                            high = "aquamarine4")
 @
 
 Wordcloud
 \todo{filter data more}
 
-<<label="terms", results='markup', cache=TRUE>>=
+<<label="termsx", results='markup', cache=TRUE>>=
 wordCorpus <- Corpus(VectorSource(tweets))
 wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
@@ -273,56 +278,103 @@ wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3, random.order
 
 Analysis of devices
 
-we try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an android device, most of the others are using iOS devices.
+we try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an android device, most of the others are using iOS devices. 
 
-\todo{describe}
-TODOD http://varianceexplained.org/r/trump-tweets/ some more
-<<label="wordcloudx", results='markup', cache=TRUE>>=
-device <- function(dataframe) {
-    tot_all <- length(dataframe$statusSource)
- 
-    Web <- 100*(length(grep("Twitter Web Client", dataframe$statusSource))/tot_all)
-    TweetDeck <- 100*(length(grep("TweetDeck", dataframe$statusSource))/tot_all)
-    iPhone <- 100*(length(grep("Twitter for iPhone", dataframe$statusSource))/tot_all)
-    iPad <- 100*(length(grep("Twitter for iPad", dataframe$statusSource))/tot_all)
-    Blackberry <- 100*(length(grep("Twitter for BlackBerry", dataframe$statusSource))/tot_all)
-    Tweetbot <- 100*(length(grep("Tweetbot for i", dataframe$statusSource))/tot_all)
-    Hootsuite <- 100*(length(grep("Hootsuite", dataframe$statusSource))/tot_all)
-    Android <- 100*(length(grep("Twitter for Android", dataframe$statusSource))/tot_all)
-    Ads <- 100*(length(grep("Twitter Ads", dataframe$statusSource))/tot_all)
-    M5 <- 100*(length(grep("Mobile Web (M5)", dataframe$statusSource))/tot_all)
-    Mac <- 100*(length(grep("Twitter for Mac", dataframe$statusSource))/tot_all)
-    Facebook <- 100*(length(grep("Facebook", dataframe$statusSource))/tot_all)
-    Instagram <- 100*(length(grep("Instagram", dataframe$statusSource))/tot_all)
-    IFTT <- 100*(length(grep("IFTT", dataframe$statusSource))/tot_all)
-    Buffer <- 100*(length(grep("Buffer", dataframe$statusSource))/tot_all)
-    CoSchedule <- 100*(length(grep("CoSchedule", dataframe$statusSource))/tot_all)
-    GainApp <- 100*(length(grep("Gain App", dataframe$statusSource))/tot_all)
-    MobileWeb <- 100*(length(grep("Mobile Web", dataframe$statusSource))/tot_all)
-    iOS <- 100*(length(grep("iOS", dataframe$statusSource))/tot_all)
-    OSX <- 100*(length(grep("OS X", dataframe$statusSource))/tot_all)
-    Echofon <- 100*(length(grep("Echofon", dataframe$statusSource))/tot_all)
-    Fireside <- 100*(length(grep("Fireside Publishing", dataframe$statusSource))/tot_all)
-    Google <- 100*(length(grep("Google", dataframe$statusSource))/tot_all)
-    MailChimp <- 100*(length(grep("MailChimp", dataframe$statusSource))/tot_all)
-    TwitterForWebsites <- 100*(length(grep("Twitter for Websites", dataframe$statusSource))/tot_all)
- 
-    percentages <- data.frame(Web, TweetDeck, iPhone, iPad, Blackberry, Tweetbot,
-               Hootsuite, Android, Ads, M5, Mac, Facebook, Instagram,
-               IFTT, Buffer, CoSchedule, GainApp, MobileWeb, iOS, OSX,
-               Echofon, Fireside, Google, MailChimp, TwitterForWebsites)
-    return(percentages) }
+We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted their approach for our data.
+You can see the times when a tweet is posted form an android or ios device
+<<label="terms", results='markup', cache=TRUE>>=
+library(readr)
+tweets3 <- read_csv("tweets3.csv")
+tweetsSmall <- tweets3 %>%
+  select(id, statusSource, text, created) %>%
+  extract(statusSource, "source", "Twitter for (.*?)<") %>%
+  filter(source %in% c("iPhone", "Android"))
 
-trumpDevice <- sort(device(tweets), decreasing = T)
- 
+tweetsSmall %>%
+  count(source, hour = hour(with_tz(created, "EST"))) %>%
+  mutate(percent = n / sum(n)) %>%
+  ggplot(aes(hour, percent, color = source)) +
+  geom_line() +
+  scale_y_continuous(labels = percent_format()) +
+  labs(x = "Hour of day (EST)",
+       y = "% of tweets",
+       color = "")
 
-
-iPhone <- length(grep("Twitter for iPhone", tweets$statusSource))
-Android <- length(grep("Twitter for Android", tweets$statusSource))
-
-iPhone
-Android
 @
+
+Pictures and links per device type. Compared with the original results from \url{http://varianceexplained.org/r/trump-tweets/} the reported gap between android and iOS has shrunk considerably.
+
+<<label="terms2", results='markup', cache=TRUE>>=
+tweet_picture_counts <- tweetsSmall %>%
+  filter(!str_detect(text, '^"')) %>%
+  count(source,
+        picture = ifelse(str_detect(text, "t.co"),
+                         "Picture/link", "No picture/link"))
+ggplot(tweet_picture_counts, aes(source, n, fill = picture)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "", y = "Number of tweets", fill = "")
+@
+
+Only few quoted tweets are published across devices
+<<label="terms3", results='markup', cache=TRUE>>=
+tweetsSmall %>%
+  count(source,
+        quoted = ifelse(str_detect(text, '^"'), "Quoted", "Not quoted")) %>%
+  ggplot(aes(source, n, fill = quoted)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "", y = "Number of tweets", fill = "") +
+  ggtitle('Whether tweets start with a quotation mark (")')
+@
+
+Frequently tweeted words
+<<label="terms4", results='markup', cache=TRUE>>=
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
+tweet_words <- tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+tweet_words %>%
+  count(word, sort = TRUE) %>%
+  head(20) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_bar(stat = "identity") +
+  ylab("Occurrences") +
+  coord_flip()
+@
+
+By device type
+
+<<label="terms5", results='markup', cache=TRUE>>=
+android_iphone_ratios <- tweet_words %>%
+  count(word, source) %>%
+  filter(sum(n) >= 5) %>%
+  spread(source, n, fill = 0) %>%
+  ungroup() %>%
+  mutate_each(funs((. + 1) / sum(. + 1)), -word) %>%
+  mutate(logratio = log2(Android / iPhone)) %>%
+  arrange(desc(logratio))
+
+android_iphone_ratios %>%
+  group_by(logratio > 0) %>%
+  top_n(15, abs(logratio)) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, logratio)) %>%
+  ggplot(aes(word, logratio, fill = logratio < 0)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  ylab("Android / iPhone log ratio") +
+  scale_fill_manual(name = "", labels = c("Android", "iPhone"),
+                    values = c("red", "lightblue"))
+@
+
+- iphone is using more hashtags
+- emotional words e.g. idiot, moron, ... are only common on android devices
+
+As \url{http://varianceexplained.org/r/trump-tweets/} this could be accomplised by a sentiment analysis. But it is already pretty clear that some devices use a very different language.
 
 \todo{description}
 

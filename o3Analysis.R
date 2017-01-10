@@ -1,4 +1,4 @@
-wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "emr", "wordcloud", "tm", "stringr", "data.table")
+wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr")
 has   <- wants %in% rownames(installed.packages())
 if(any(!has)) install.packages(wants[!has])
 lapply(wants, library, character.only=T)

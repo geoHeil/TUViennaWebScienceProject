@@ -20,7 +20,7 @@ tweets <- Authenticate("twitter",
                        accessTokenSecret = myaccesstokensecret) %>%
   # interesting tags: #starwars, #trump
   # restore from file csv doesnt work, rdata works
-Collect(searchTerm="#trump", numTweets = 100000,writeToFile=FALSE,verbose=TRUE)#, waitForRateLimit = TRUE)
+Collect(searchTerm="#trump", numTweets = 100000,writeToFile=TRUE,verbose=TRUE)#, waitForRateLimit = TRUE)
 
 fileString <- paste('tweets',format(Sys.time(), "%a-%b-%d-%X-%Y"), "_tweets.Rdata", sep = '')
 first <- str_replace(fileString, ':', "_")
