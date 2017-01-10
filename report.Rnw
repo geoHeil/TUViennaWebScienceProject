@@ -14,7 +14,7 @@
 
 \chapter{Data Analysis and visualisation}
 <<librariesLoading, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=FALSE, message=FALSE>>=
-wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "ggthemr", "wordcloud", "tm", "stringr")
+wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr")
 has   <- wants %in% rownames(installed.packages())
 if(any(!has)) install.packages(wants[!has])
 lapply(wants, library, character.only=T)
@@ -219,10 +219,120 @@ some summary
 \chapter{Text analysis}
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
 
-<<label="textanalysis", results='markup', cache=TRUE>>=
-# TODO add wordcoloud here
+<<label="textanalysis1", results='markup', cache=TRUE>>=
+tweets <- read.csv("data/trumpTweets.csv")
+
+ggplot(tweets, aes(factor(grepl("#",tweets$text)))) +
+        geom_bar(fill = "midnightblue") + 
+        theme(legend.position="none", axis.title.x = element_blank()) +
+        ylab("Number of tweets") + 
+        ggtitle("Tweets with Hashtags") +
+        scale_x_discrete(labels=c("No hashtags", "Tweets with hashtags"))
+
+ggplot(tweets, aes(factor(grepl('^"', tweets$text)))) +
+        geom_bar(fill = "midnightblue") + 
+        theme(legend.position="none", axis.title.x = element_blank()) +
+        ylab("Number of tweets") + 
+        ggtitle("Tweets with quatation mark") +
+        scale_x_discrete(labels=c("No quatation mark", "Tweets with quatation mark"))
+
+tweets$created <- ymd_hms(tweets$created)
+
+ggplot(data = tweets, aes(x = created)) +
+        geom_histogram(aes(fill = ..count..)) +
+        theme(legend.position = "none") +
+        xlab("Time") + ylab("Number of tweets") + 
+        scale_fill_gradient(low = "midnightblue", high = "aquamarine4")
 @
 
+Wordcloud
+\todo{filter data more}
+
+<<label="terms", results='markup', cache=TRUE>>=
+wordCorpus <- Corpus(VectorSource(tweets))
+wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
+
+wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
+
+tdm <- TermDocumentMatrix(wordCorpus, control = list(wordLengths = c(1, Inf)))
+(freq.terms <- findFreqTerms(tdm, lowfreq = 20))
+term.freq <- rowSums(as.matrix(tdm))
+term.freq <- subset(term.freq, term.freq >= 20)
+df <- data.frame(term = names(term.freq), freq = term.freq)
+ggplot(df, aes(x=term, y=freq)) + geom_bar(stat="identity") + xlab("Terms") + ylab("Count") + coord_flip() 
+
+m <- as.matrix(tdm)
+word.freq <- sort(rowSums(m), decreasing = T)
+pal <- brewer.pal(9, "BuGn")[-(1:4)]
+
+wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3, random.order = F, colors = pal)
+@
+
+Analysis of devices
+
+we try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an android device, most of the others are using iOS devices.
+
+\todo{describe}
+TODOD http://varianceexplained.org/r/trump-tweets/ some more
+<<label="wordcloudx", results='markup', cache=TRUE>>=
+device <- function(dataframe) {
+    tot_all <- length(dataframe$statusSource)
+ 
+    Web <- 100*(length(grep("Twitter Web Client", dataframe$statusSource))/tot_all)
+    TweetDeck <- 100*(length(grep("TweetDeck", dataframe$statusSource))/tot_all)
+    iPhone <- 100*(length(grep("Twitter for iPhone", dataframe$statusSource))/tot_all)
+    iPad <- 100*(length(grep("Twitter for iPad", dataframe$statusSource))/tot_all)
+    Blackberry <- 100*(length(grep("Twitter for BlackBerry", dataframe$statusSource))/tot_all)
+    Tweetbot <- 100*(length(grep("Tweetbot for i", dataframe$statusSource))/tot_all)
+    Hootsuite <- 100*(length(grep("Hootsuite", dataframe$statusSource))/tot_all)
+    Android <- 100*(length(grep("Twitter for Android", dataframe$statusSource))/tot_all)
+    Ads <- 100*(length(grep("Twitter Ads", dataframe$statusSource))/tot_all)
+    M5 <- 100*(length(grep("Mobile Web (M5)", dataframe$statusSource))/tot_all)
+    Mac <- 100*(length(grep("Twitter for Mac", dataframe$statusSource))/tot_all)
+    Facebook <- 100*(length(grep("Facebook", dataframe$statusSource))/tot_all)
+    Instagram <- 100*(length(grep("Instagram", dataframe$statusSource))/tot_all)
+    IFTT <- 100*(length(grep("IFTT", dataframe$statusSource))/tot_all)
+    Buffer <- 100*(length(grep("Buffer", dataframe$statusSource))/tot_all)
+    CoSchedule <- 100*(length(grep("CoSchedule", dataframe$statusSource))/tot_all)
+    GainApp <- 100*(length(grep("Gain App", dataframe$statusSource))/tot_all)
+    MobileWeb <- 100*(length(grep("Mobile Web", dataframe$statusSource))/tot_all)
+    iOS <- 100*(length(grep("iOS", dataframe$statusSource))/tot_all)
+    OSX <- 100*(length(grep("OS X", dataframe$statusSource))/tot_all)
+    Echofon <- 100*(length(grep("Echofon", dataframe$statusSource))/tot_all)
+    Fireside <- 100*(length(grep("Fireside Publishing", dataframe$statusSource))/tot_all)
+    Google <- 100*(length(grep("Google", dataframe$statusSource))/tot_all)
+    MailChimp <- 100*(length(grep("MailChimp", dataframe$statusSource))/tot_all)
+    TwitterForWebsites <- 100*(length(grep("Twitter for Websites", dataframe$statusSource))/tot_all)
+ 
+    percentages <- data.frame(Web, TweetDeck, iPhone, iPad, Blackberry, Tweetbot,
+               Hootsuite, Android, Ads, M5, Mac, Facebook, Instagram,
+               IFTT, Buffer, CoSchedule, GainApp, MobileWeb, iOS, OSX,
+               Echofon, Fireside, Google, MailChimp, TwitterForWebsites)
+    return(percentages) }
+
+trumpDevice <- sort(device(tweets), decreasing = T)
+ 
+
+
+iPhone <- length(grep("Twitter for iPhone", tweets$statusSource))
+Android <- length(grep("Twitter for Android", tweets$statusSource))
+
+iPhone
+Android
+@
+
+\todo{description}
+
+<<label="textanalysis2", results='markup', cache=TRUE>>=
+ggplot(data = tweets, aes(x = wday(created))) +
+        geom_histogram(breaks = seq(0.5, 8, by =1), aes(fill = ..count..)) +
+        theme(legend.position = "none") +
+        xlab("Day of the Week") + ylab("Number of tweets") + 
+        scale_fill_gradient(low = "midnightblue", high = "aquamarine4")
+@
 
 \chapter{Discussion and conclusion}
 What about the quality of the data? What are the limitations? What questions can be answered and what new insights can be gained by analyzing the structure of the networks? What nodes are in strategic locations? What can you tell about the communities identified? What do you learn by looking at the different networks? Why is it interesting to combine the information from structural and textual data? Interpret and discuss your findings!
