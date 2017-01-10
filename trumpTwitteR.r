@@ -2,19 +2,19 @@
 
 library(twitteR)
 library(tm)
-library(ROAuth)
+#library(ROAuth)
 library(wordcloud)
 
-setup_twitter_oauth(	myapikey,
-					myapisecret,
-					myaccesstoken,
-					myaccesstokensecret)
+#setup_twitter_oauth(	myapikey,#
+					#myapisecret,
+					#myaccesstoken,
+					#myaccesstokensecret)
 #################################################
-tweets <- userTimeline("realDonaldTrump",n=10000)
+#tweets <- userTimeline("realDonaldTrump",n=10000)
 # convert tweets to data frame
-tweets.df <- twListToDF(tweets)
-write.csv(tweets.df, file = "data/trumpTweets.csv", row.names=F)
-length(tweets)
+#tweets.df <- twListToDF(tweets)
+#write.csv(tweets.df, file = "data/trumpTweets.csv", row.names=F)
+#length(tweets)
 ############ some user info
 user <- getUser("realDonaldTrump")
 user$toDataFrame()
@@ -26,7 +26,7 @@ length(tweets)
 tweets.df <- twListToDF(tweets)
 write.csv(tweets.df, file = "data/trumpHashtagTweets.csv", row.names=F)
 
-# tweets <- read.csv("data/trumpTweets.csv")
+tweets <- read.csv("data/trumpTweets.csv")
 library(ggplot2)
 library(lubridate)
 library(scales)
