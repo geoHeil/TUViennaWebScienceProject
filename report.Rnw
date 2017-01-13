@@ -9,7 +9,9 @@
 \tableofcontents
 
 \begin{abstract}
-	Graph analysis of partial twitter network obtained by hashtag \textbf{trump}. \todo{TODO}
+	We performed graph analysis of partial twitter network data obtained by hashtag \textbf{trump}. 
+	Basic garph metrics are computed for two points in time.
+	The network is visualized and we perform a text analysis per group. Trying to identify the real trump we check for posts from ios vs. android devices.\todo{TODO}
 \end{abstract}
 
 \chapter{Data Analysis and visualisation}
@@ -23,7 +25,7 @@ lapply(wants, library, character.only=T)
 We chose to analyse a partial network of twitter with the hashtag \textbf{trump}.
 The data was collected at two points in time. Once early December, the second time early January. Both times around 18000 tweets were collected (which represent the maximum number of tweets which can be retrieved at once before hitting the API limit).
 
-We chose to use the \hyperref{https://github.com/vosonlab/SocialMediaLab}{socialMediaLab} package to collect the data.
+The \hyperref{https://github.com/vosonlab/SocialMediaLab}{socialMediaLab} package to collect the data.
 It supports to generate several types of networks for our kind of data
 
 \begin{itemize}
@@ -41,11 +43,10 @@ We will compare these 3 networks for some metrics.
 
 \section{Network statistics and communities}
 
-Basic statistics of the network are represented in this section.
-
-Calculate different metrics and measures, e.g., number of vertices, number of edges and their weights, degree distribution (resp. in-degree and out-degree in the directed case), centrality indices, clustering coefficient, reciprocity, shortest paths, network diameter, density, number and size of connected components.
-
+Basic statistics of the network are calculated in this section.
 Additionally, communities  and centrality metrics are analyzed.
+
+First we load the twitter graph data and create a graph.
 
 <<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
 load('tweets.Rdata')
@@ -55,7 +56,7 @@ g_twitter_bimodal <- tweets %>%
   Create("Bimodal", writeToFile=FALSE)
 @
 
-And here the computation of the metrics. We define the following function to compute them:
+Here is the computation of the metrics. We define the following function to compute them:
 
 <<label="metricsNumberVertices", results='markup', cache=TRUE>>=
 calcStats <- function(graphName){
@@ -162,13 +163,12 @@ For the bimodal graph statistics are
 calcStats(g_twitter_bimodal)
 @
 
+\todo{rework this summary and include reference to bimodal vs actor network}
 From the results it is noticeable  that 
 bimodal network is bigger and better connected. Diameter and average distance between nodes are significantly smaller in bimodal network.
 Degree centrality counts hot many direct connections each node has to other nodes within the network, it is useful for finding individuals within the network who hold most informations, or who can connect with the wider network or are most popular.  Most influential nodes in network are calculated by in-degree centrality. These are profiles with most commented, mentioned or replied posts with most followers. It is interesting to see that Donald Trump is only fifth most  influential user in this data set. For finding nodes who are best placed to influence the entire network most quickly, closeness centrality is used. As expected Donald Trump is most influential in this network but interestingly enough he  does not have the  biggest score in eigenvector centrality. The node with most important edges is node with username \textit{funder}. This user has also biggest hub, authority and pagerank scores.  He has more than 45000 tweets and  majority are anti Trump tweets.
 
 \section{Visualization}
-Use different layouts to find and highlight patterns and relationships. To make sense of the data more easily, map the metrics and measures calculated onto visual properties such as size, colour, and opacity.
-
 Gephi was used for the visualization in Figure \ref{fig:plotActor}.
 as well as for Figure \ref{fig:plotBimodal}.
 We used the degree filter in gephi to filter the graph to a minimal degreee and to remove nodes with very few connections after the Giant Component filter to make sure to include only the main vertices.
@@ -186,8 +186,6 @@ The edges are coloured with the type of connection e.g. retweet, mention.
   \includegraphics[width=\textwidth]{slides-figure/g1bimodal1}
   \label{fig:plotBimodal}
 \end{figure}
-
-\todo{Add description to the plots}
 
 \chapter{Longitudinal}
 How did the network change? What dynamics can be
@@ -214,8 +212,7 @@ and  for the bimodal version of the graph
 calcStats(g_twitter_bimodal)
 @
 
-
-\todo{}
+\todo{check for critical events in that period maybe xmas / his new year?, she wanted us to specifically have something like that. we should at least make someting up}
 Since data sets are gathered in close time periods and no important event has occurred in this period result are pretty much the same.
 
 \section{ego network analysis}
@@ -234,6 +231,7 @@ Again edges were coded in red for retweets and green for mentions.
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
 
 \todo{check this, add communities}
+\todo{do not write about most frequent words but rather show the plots here}
 Most frequent words on 06.01.2017 were: maga, will, trump, intelligence, hacking, news, briefing, usa, election, theresistance. 
 After Meryl Streep had her speech on Golden Globes about Trump her mentions with hashtag Trump skyrocketed she is one of most frequently tweeted words on 10.01.2017 while searching twitter with trump hashtag. So even though there were no changes in 
 metrics the content of tweets is different.
