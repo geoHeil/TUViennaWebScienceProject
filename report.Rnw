@@ -169,6 +169,7 @@ Use different layouts to find and highlight patterns and relationships. To make 
 
 Gephi was used for the visualization in Figure \ref{fig:plotActor}.
 as well as for Figure \ref{fig:plotBimodal}.
+We used the degree filter in gephi to filter the graph to a minimal degreee and to remove nodes with very few connections.
 
 \begin{figure}[h]
   \centering
@@ -315,27 +316,6 @@ android_iphone_ratios %>%
 
   - iphone is using more hashtags
   - emotional words e.g. idiot, moron, ... are only common on android devices
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% disabled because was very slow. Strange should have been quicker to compute.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%<<label="wordcloud", results='markup', cache=TRUE>>=
-%wordCorpus <- Corpus(VectorSource(tweet_words))
-%tdm <- TermDocumentMatrix(wordCorpus,
-%              control = list(wordLengths = c(1, Inf)))
-%term.freq <- rowSums(as.matrix(tdm))
-%term.freq <- subset(term.freq, term.freq >= 20)
-%df <- data.frame(term = names(term.freq), freq = term.freq)
-%m <- as.matrix(tdm)
-%word.freq <- sort(rowSums(m), decreasing = T)
-%pal <- brewer.pal(9, "BuGn")[-(1:4)]
-
-%wordcloud(words = names(word.freq),
-%          freq = word.freq,
-          %min.freq = 3,
-          %random.order = F,
-          %colors = pal)
-%@
 
 As \url{http://varianceexplained.org/r/trump-tweets/} this could be accomplised by a sentiment analysis. But it is already pretty clear that some devices use a very different language.
 
