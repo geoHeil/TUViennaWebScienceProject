@@ -232,19 +232,12 @@ Again edges were coded in red for retweets and green for mentions.
 
 \chapter{Text analysis}
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
-\todo{}
 
+\todo{check this, add communities}
 Most frequent words on 06.01.2017 were: maga, will, trump, intelligence, hacking, news, briefing, usa, election, theresistance. 
 After Meryl Streep had her speech on Golden Globes about Trump her mentions with hashtag Trump skyrocketed she is one of most frequently tweeted words on 10.01.2017 while searching twitter with trump hashtag. So even though there were no changes in 
 metrics the content of tweets is different.
 
-<<<<<<< HEAD
-Apparently only Trump is using an android device, his staff uses iOS devices. 
-So it would be interesting to know who is actually typing the tweet.
-We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted their approach for our data.
-Following graph shows what time of day is tweeted from Android device and when is it tweeted from iOS device. It is visible, but not as much as in original data, that Trump tweets more in the morning while his staff is more active later in the day.
-<<terms123, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=FALSE, message=FALSE>>=
-=======
 % strange chace=TRUE does not work
 <<label="wordcloud", results='markup', cache=FALSE, warning=FALSE>>=
 nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
@@ -294,7 +287,6 @@ We try to figure out if the real Trump is tweeting or one of his co-workers. App
 We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted their approach for our data.
 You can see the times when a tweet is posted form an android or ios device
 <<terms123, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=TRUE, message=FALSE>>=
->>>>>>> b9ed480fa788ee99c2f87ddae695f78c7427e045
 tweets3 <- read_csv("tweets3.csv")
 @
 <<label="terms", results='markup', cache=TRUE>>=
