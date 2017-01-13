@@ -1,5 +1,5 @@
 # setup the libraries
-wants <- c("SocialMediaLab", "magrittr", "stringr")
+wants <- c("SocialMediaLab", "magrittr", "stringr","twitteR","ROAuth")
 has   <- wants %in% rownames(installed.packages())
 if(any(!has)) install.packages(wants[!has])
 lapply(wants, library, character.only=T)
@@ -26,3 +26,20 @@ fileString <- paste('tweets',format(Sys.time(), "%a-%b-%d-%X-%Y"), "_tweets.Rdat
 first <- str_replace(fileString, ':', "_")
 second <- str_replace(first, ':', "_")
 save(tweets, file = second)
+
+
+
+#####################################################
+setup_twitter_oauth(	myapikey,
+					myapisecret,
+					myaccesstoken,
+					myaccesstokensecret)
+user <- getUser("realDonaldTrump")
+user$toDataFrame()
+friends <- user$getFriends() # who this user follows
+followers <- user$getFollowers() # this user's followers
+####################################################
+tweets <- searchTwitter("#trump", n=10000)
+length(tweets)
+tweets.df <- twListToDF(tweets)
+write.csv(tweets.df, file = "data/trumpHashtagTweets.csv", row.names=F)

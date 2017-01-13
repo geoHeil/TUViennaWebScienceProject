@@ -1,4 +1,4 @@
-wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr")
+wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr","twitteR","tm","wordcloud","readr","htmlwidgets","streamgraph")
 has   <- wants %in% rownames(installed.packages())
 if(any(!has)) install.packages(wants[!has])
 lapply(wants, library, character.only=T)
@@ -35,10 +35,11 @@ g_twitter_bimodal <- tweets %>% Create("Bimodal", writeToFile=TRUE)
 #g_twitter_semantic_reduced <- tweets %>%
   #Create("Semantic",termFreq=100,removeTermsOrHashtags=c("#trump"), writeToFile=TRUE) # this is a lot bigger # TODO check why this is no longer working !!!!!!!!!!!!
 # TODO compare network representations!!
-# TODO switch to instagram! dynamic network is supported
-
 
 ####################################################
+# g1 <- read.graph("actorNetwork.graphml", format = "graphml")
+# g1 <- read.graph("bimodalNetwork.graphml", format = "graphml")
+# g1 <- simplify(g1)
 # choose some layout
 coolPlot <- function(graphName){
   glay = layout.fruchterman.reingold(graphName)
@@ -145,6 +146,8 @@ calcStats <- function(graphName){
   betw <- igraph::betweenness(graphName, directed=T) 
   print("Betweeness centrality (from highest to lowest)")
   print(sort(betw, decreasing = T)[1:10])
+
+  hist (sort(betw, decreasing = T)[1:10])
   
   # Hubs and Authorities
   hs <- hub_score(graphName)$vector
@@ -193,20 +196,28 @@ calcStats(g_twitter_actor)
 calcStats(g_twitter_bimodal)
 
 ##################### wordcloud  
-#tweetsCloud <- tweets
-# TODO fix this that all words are removed
-#nohandles <- str_replace_all(tweetsCloud$tweets, "@\\w+", "") # just plain english words
-wordCorpus <- Corpus(VectorSource(tweets))
+
+nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
+wordCorpus <- Corpus(VectorSource(nohandles))
+wordCorpus <- tm_map(wordCorpus,content_transformer(function(x) iconv(x, to='UTF-8', sub='byte')),mc.cores=1)
+
 wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
-
-#removeURL <- function(x) gsub("http[^[:space:]]*", "", x)
-#wordCorpus <- tm_map(wordCorpus, content_transformer(removeURL))
-
 wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
-#wordCorpus <- tm_map(wordCorpus, removeWords, c("the", "https","httpst","like","one"))# TODO fix
+wordCorpus <- tm_map(wordCorpus, removeWords, c("trump","realdonaldtrump"))
+
+
+pal <- brewer.pal(9,"Reds")
+pal <- pal[-(1:4)]
+set.seed(123)
+
+# pal <- brewer.pal(9, "BuGn")[-(1:4)]
+
+wordcloud(words = wordCorpus, scale=c(6,0.1), max.words=250, random.order=FALSE, 
+          rot.per=0.35, use.r.layout=FALSE, colors=pal)
+
 
 tdm <- TermDocumentMatrix(wordCorpus, control = list(wordLengths = c(1, Inf)))
 (freq.terms <- findFreqTerms(tdm, lowfreq = 20))
@@ -217,9 +228,7 @@ ggplot(df, aes(x=term, y=freq)) + geom_bar(stat="identity") + xlab("Terms") + yl
 
 m <- as.matrix(tdm)
 word.freq <- sort(rowSums(m), decreasing = T)
-pal <- brewer.pal(9, "BuGn")[-(1:4)]
 
-wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3, random.order = F, colors = pal)
 
 findAssocs(tdm, "realtrump", 0.2)
 #findAssocs(tdm, "data", 0.2)
@@ -229,7 +238,6 @@ term <- terms(lda, 7) # first 7 terms of every topic (term <- apply(term, MARGIN
 #############################################################################
 library(networkD3)
 # http://curleylab.psych.columbia.edu/netviz/netviz2.html#/9
-# TODO make a cool interactive visualization
 #http://curleylab.psych.columbia.edu/netviz/netviz2.html
 
 # Create fake data
@@ -243,6 +251,51 @@ networkData <- data.frame(src, target)
 #simpleNetwork(networkData)
 simpleNetwork(tweets)
 
-# TODO visualize tweets over time http://ouzor.github.io/blog/2015/08/31/twitter-streamgraph.html
+
 # some visualization link http://kateto.net/network-visualization
 # to collect more data http://www.bnosac.be/index.php/blog/57-new-rstudio-add-in-to-schedule-r-scripts
+
+# TODO visualize tweets over time http://ouzor.github.io/blog/2015/08/31/twitter-streamgraph.html
+####### visualization over time  does NOT work
+
+library("readr")
+library("dplyr")
+library("lubridate")
+library("streamgraph")
+library("htmlwidgets")
+
+# Read  tweets
+  tweets_df <- read_csv("tweets3.csv") %>%
+  select(created, text) %>%
+  mutate(text = tolower(text))
+
+# Pick hashtags with regexp
+hashtags_list <- regmatches(tweets_df$text, gregexpr("#[[:trump:]]+", tweets_df$text))
+
+# Create a new data_frame with (timestamp, hashtag) -pairs
+hashtags_df <- data_frame()
+for (i in which(sapply(hashtags_list, length) > 0)) {
+  hashtags_df <- bind_rows(hashtags_df, data_frame(timestamp = tweets_df$created[i],
+                                                   hashtag = hashtags_list[[i]]))
+}
+
+# Process data for plotting
+hashtags_df <- hashtags_df %>%
+  # Pick top 20 hashtags
+  filter(hashtag %in% names(sort(table(hashtag), decreasing=TRUE))[1:20]) %>%
+  # Group by year-month (daily is too messy)
+  # Need to add '-01' to make it a valid date for streamgraph
+  mutate(yearmonth = paste0(format(as.Date(timestamp), format="%Y-%m"), "-01")) %>%
+  group_by(yearmonth, hashtag) %>%
+  summarise(value = n())
+
+# Create streamgraph
+sg <- streamgraph(data = hashtags_df, key = "hashtag", value = "value", date = "yearmonth",
+                 offset = "silhouette", interpolate = "cardinal",
+                 width = "700", height = "400") %>%
+  sg_legend(TRUE, "hashtag: ") %>%
+  sg_axis_x(tick_interval = 1, tick_units = "year", tick_format = "%Y")
+
+
+
+
