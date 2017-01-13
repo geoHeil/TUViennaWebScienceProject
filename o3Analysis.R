@@ -200,34 +200,38 @@ calcStats(g_twitter_bimodal)
 nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
 wordCorpus <- Corpus(VectorSource(nohandles))
 wordCorpus <- tm_map(wordCorpus,content_transformer(function(x) iconv(x, to='UTF-8', sub='byte')),mc.cores=1)
-
 wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
 wordCorpus <- tm_map(wordCorpus, removeWords, c("trump","realdonaldtrump"))
+wordCorpus <- tm_map(wordCorpus, removeWords, c("the", "https","httpst","like","one"))
 
 
-pal <- brewer.pal(9,"Reds")
-pal <- pal[-(1:4)]
-set.seed(123)
-
-# pal <- brewer.pal(9, "BuGn")[-(1:4)]
-
-wordcloud(words = wordCorpus, scale=c(6,0.1), max.words=250, random.order=FALSE, 
-          rot.per=0.35, use.r.layout=FALSE, colors=pal)
-
-
-tdm <- TermDocumentMatrix(wordCorpus, control = list(wordLengths = c(1, Inf)))
-(freq.terms <- findFreqTerms(tdm, lowfreq = 20))
+tdm <- TermDocumentMatrix(wordCorpus,
+                          control = list(wordLengths = c(1, Inf)))
 term.freq <- rowSums(as.matrix(tdm))
 term.freq <- subset(term.freq, term.freq >= 20)
 df <- data.frame(term = names(term.freq), freq = term.freq)
-ggplot(df, aes(x=term, y=freq)) + geom_bar(stat="identity") + xlab("Terms") + ylab("Count") + coord_flip() 
-
 m <- as.matrix(tdm)
 word.freq <- sort(rowSums(m), decreasing = T)
+pal <- brewer.pal(9, "BuGn")[-(1:4)]
+
+wordcloud(words = names(word.freq),
+          freq = word.freq,
+          min.freq = 3,
+          random.order = F,
+          colors = pal,
+          max.words = 300)
+wordcloud(words = wordCorpus,
+          scale=c(6,0.1),
+          max.words=250,
+          random.order=FALSE, 
+          rot.per=0.35,
+          use.r.layout=FALSE,
+          colors=pal)
+
 
 
 findAssocs(tdm, "realtrump", 0.2)

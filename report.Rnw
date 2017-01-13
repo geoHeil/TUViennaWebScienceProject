@@ -171,6 +171,8 @@ Use different layouts to find and highlight patterns and relationships. To make 
 
 Gephi was used for the visualization in Figure \ref{fig:plotActor}.
 as well as for Figure \ref{fig:plotBimodal}.
+We used the degree filter in gephi to filter the graph to a minimal degreee and to remove nodes with very few connections after the Giant Component filter to make sure to include only the main vertices.
+The edges are coloured with the type of connection e.g. retweet, mention.
 
 \begin{figure}[h]
   \centering
@@ -217,7 +219,16 @@ calcStats(g_twitter_bimodal)
 Since data sets are gathered in close time periods and no important event has occurred in this period result are pretty much the same.
 
 \section{ego network analysis}
-\todo{add ego network visualization from gephi}
+We chose to analyze the ego network of donald trump. To perform the analysis gephi's ego network operator was used. The id of \@realDonaldTrump is n9830 even though about 5 similar accounts are involved we chose that one as the source for our ego network which was generated with an depth of 1. The result can be seen in igure \ref{fig:plotActorEgo}. Nodes are coloured by modularity class obtained from gephis statistical analysis capabilities. Additionally pagerank is visualized as the size of vertices.
+
+Again edges were coded in red for retweets and green for mentions.
+
+\begin{figure}[h]
+  \centering
+  \caption{Ego network of donald trump}
+  \includegraphics[width=\textwidth]{slides-figure/geigen}
+  \label{fig:plotActorEgo}
+\end{figure}
 
 \chapter{Text analysis}
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
@@ -227,11 +238,63 @@ Most frequent words on 06.01.2017 were: maga, will, trump, intelligence, hacking
 After Meryl Streep had her speech on Golden Globes about Trump her mentions with hashtag Trump skyrocketed she is one of most frequently tweeted words on 10.01.2017 while searching twitter with trump hashtag. So even though there were no changes in 
 metrics the content of tweets is different.
 
+<<<<<<< HEAD
 Apparently only Trump is using an android device, his staff uses iOS devices. 
 So it would be interesting to know who is actually typing the tweet.
 We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted their approach for our data.
 Following graph shows what time of day is tweeted from Android device and when is it tweeted from iOS device. It is visible, but not as much as in original data, that Trump tweets more in the morning while his staff is more active later in the day.
 <<terms123, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=FALSE, message=FALSE>>=
+=======
+% strange chace=TRUE does not work
+<<label="wordcloud", results='markup', cache=FALSE, warning=FALSE>>=
+nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
+wordCorpus <- Corpus(VectorSource(nohandles))
+wordCorpus <- tm_map(wordCorpus,
+    content_transformer(function(x) iconv(x,
+                        to='UTF-8',
+                        sub='byte')),
+                     mc.cores=1)
+wordCorpus <- tm_map(wordCorpus,
+      removePunctuation,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+      content_transformer(tolower),lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+      removeWords, stopwords("english"),lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+      removeNumbers,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+     stripWhitespace,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+     removeWords, c("trump","realdonaldtrump"))
+wordCorpus <- tm_map(wordCorpus,
+    removeWords, c("the", "https","httpst","like","one"))
+
+
+tdm <- TermDocumentMatrix(wordCorpus,
+        control = list(wordLengths = c(1, Inf)))
+term.freq <- rowSums(as.matrix(tdm))
+term.freq <- subset(term.freq,
+                    term.freq >= 20)
+df <- data.frame(term = names(term.freq),
+                 freq = term.freq)
+m <- as.matrix(tdm)
+word.freq <- sort(rowSums(m),
+                  decreasing = T)
+pal <- brewer.pal(9, "BuGn")[-(1:4)]
+
+wordcloud(words = names(word.freq),
+          freq = word.freq,
+          min.freq = 3,
+          random.order = F,
+          colors = pal,
+          max.words = 300)
+@
+
+We try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an android device, most of the others are using iOS devices. 
+We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted their approach for our data.
+You can see the times when a tweet is posted form an android or ios device
+<<terms123, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=TRUE, message=FALSE>>=
+>>>>>>> b9ed480fa788ee99c2f87ddae695f78c7427e045
 tweets3 <- read_csv("tweets3.csv")
 @
 <<label="terms", results='markup', cache=TRUE>>=
@@ -324,27 +387,6 @@ android_iphone_ratios %>%
    Results are showing that tweets from iPhone are using more hashtags while tweets from 
   Android include words moron and idiot. It is also noticeable that words from Android are much more frequently repeated.
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% disabled because was very slow. Strange should have been quicker to compute.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%<<label="wordcloud", results='markup', cache=TRUE>>=
-%wordCorpus <- Corpus(VectorSource(tweet_words))
-%tdm <- TermDocumentMatrix(wordCorpus,
-%              control = list(wordLengths = c(1, Inf)))
-%term.freq <- rowSums(as.matrix(tdm))
-%term.freq <- subset(term.freq, term.freq >= 20)
-%df <- data.frame(term = names(term.freq), freq = term.freq)
-%m <- as.matrix(tdm)
-%word.freq <- sort(rowSums(m), decreasing = T)
-%pal <- brewer.pal(9, "BuGn")[-(1:4)]
-
-%wordcloud(words = names(word.freq),
-%          freq = word.freq,
-          %min.freq = 3,
-          %random.order = F,
-          %colors = pal)
-%@
 
 As \url{http://varianceexplained.org/r/trump-tweets/} this could be accomplised by a sentiment analysis. But it is already pretty clear that some devices use a very different language.
 
