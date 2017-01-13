@@ -9,9 +9,9 @@
 \tableofcontents
 
 \begin{abstract}
-	We performed graph analysis of partial twitter network data obtained by hashtag \textbf{trump}. 
+	Network analysis of partial twitter network data obtained by hashtag \textbf{trump} is performed. 
 	Basic garph metrics are computed for two points in time.
-	The network is visualized and we perform a text analysis per group. Trying to identify the real trump we check for posts from ios vs. android devices.\todo{TODO}
+	The network is visualized and we perform text analysis for some selected groups. Trying to identify the real trump we check for posts from ios vs. android devices.
 \end{abstract}
 
 \chapter{Data Analysis and visualisation}
@@ -23,10 +23,10 @@ lapply(wants, library, character.only=T)
 @
 \section{Overview}
 We chose to analyse a partial network of twitter with the hashtag \textbf{trump}.
-The data was collected at two points in time. Once early December, the second time early January. Both times around 18000 tweets were collected (which represent the maximum number of tweets which can be retrieved at once before hitting the API limit).
+The data was collected at two points in time. Once early December, the second time early January. Both times around 18000 tweets were collected. This number represent the maximum number of tweets which can be retrieved at once before hitting the API limit.
 
-The \hyperref{https://github.com/vosonlab/SocialMediaLab}{socialMediaLab} package to collect the data.
-It supports to generate several types of networks for our kind of data
+The socialMediaLab package was used to collect the data (\url{https://github.com/vosonlab/SocialMediaLab}).
+It supports the generation of different types of networks:
 
 \begin{itemize}
   \item \textbf{bimodal} A user can comment or like a post. Therefor if user $i$ has liked and commented on a post two directed edges are created. The generated network is directed, weighted (\#ofComments), bipartite and contains multiple /parallel edges
@@ -164,9 +164,12 @@ calcStats(g_twitter_bimodal)
 @
 
 \todo{rework this summary and include reference to bimodal vs actor network}
-From the results it is noticeable  that 
-bimodal network is bigger and better connected. Diameter and average distance between nodes are significantly smaller in bimodal network.
-Degree centrality counts hot many direct connections each node has to other nodes within the network, it is useful for finding individuals within the network who hold most informations, or who can connect with the wider network or are most popular.  Most influential nodes in network are calculated by in-degree centrality. These are profiles with most commented, mentioned or replied posts with most followers. It is interesting to see that Donald Trump is only fifth most  influential user in this data set. For finding nodes who are best placed to influence the entire network most quickly, closeness centrality is used. As expected Donald Trump is most influential in this network but interestingly enough he  does not have the  biggest score in eigenvector centrality. The node with most important edges is node with username \textit{funder}. This user has also biggest hub, authority and pagerank scores.  He has more than 45000 tweets and  majority are anti Trump tweets.
+From the results it is noticeable  that the 
+bimodal network is bigger and better connected. Diameter and average distance between nodes are significantly smaller.
+Degree centrality counts how many direct connections each node has to other nodes within the network. 
+This is useful for finding individuals within the network who hold most informations, or who can connect with the wider network or are most popular.  Most influential nodes in network are calculated by in-degree centrality. These are profiles with most commented, mentioned or replied posts with most followers. It is interesting to see that Donald Trump is only fifth most  influential user in this data set. \todo{check especially actor vs bimodal try to explain why} 
+To find which nodes are best placed to influence the entire network most quickly, closeness centrality is used.
+As expected Donald Trump is most influential in this network but interestingly enough he does not have the  biggest score in eigenvector centrality. The node with most important edges is node with username \textit{funder}. This user has also biggest hub, authority and pagerank scores.  He has more than 45000 tweets and  majority are anti Trump tweets.
 
 \section{Visualization}
 Gephi was used for the visualization in Figure \ref{fig:plotActor}.
@@ -188,9 +191,6 @@ The edges are coloured with the type of connection e.g. retweet, mention.
 \end{figure}
 
 \chapter{Longitudinal}
-How did the network change? What dynamics can be
-identified? Are there critical events in the period observed?
-
 The same metrics as before are computed now, but for a new dataset collected several weeks later.
 
 loading of the new data
@@ -216,20 +216,19 @@ calcStats(g_twitter_bimodal)
 Since data sets are gathered in close time periods and no important event has occurred in this period result are pretty much the same.
 
 \section{ego network analysis}
-We chose to analyze the ego network of donald trump. To perform the analysis gephi's ego network operator was used. The id of \@realDonaldTrump is n9830 even though about 5 similar accounts are involved we chose that one as the source for our ego network which was generated with an depth of 1. The result can be seen in igure \ref{fig:plotActorEgo}. Nodes are coloured by modularity class obtained from gephis statistical analysis capabilities. Additionally pagerank is visualized as the size of vertices.
+We chose to analyze the ego network of Donald Trump. To perform the analysis gephi's ego network operator was used. The id of \emph{realDonaldTrump} is n9830.
+Though about 5 similar accounts are involved we chose that one as the source for our ego network which was generated with an depth of 1. The result can be seen in Figure \ref{fig:plotActorEgo}. Nodes are coloured by modularity class obtained from gephis statistical analysis capabilities. Additionally pagerank is visualized as the size of vertices.
 
 Again edges were coded in red for retweets and green for mentions.
 
 \begin{figure}[h]
   \centering
-  \caption{Ego network of donald trump}
+  \caption{Ego network of Donald Trump}
   \includegraphics[width=\textwidth]{slides-figure/geigen}
   \label{fig:plotActorEgo}
 \end{figure}
 
 \chapter{Text analysis}
-What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
-
 \todo{check this, add communities}
 \todo{do not write about most frequent words but rather show the plots here}
 Most frequent words on 06.01.2017 were: maga, will, trump, intelligence, hacking, news, briefing, usa, election, theresistance. 
@@ -377,11 +376,11 @@ android_iphone_ratios %>%
    Results are showing that tweets from iPhone are using more hashtags while tweets from 
   Android include words moron and idiot. It is also noticeable that words from Android are much more frequently repeated.
 
-
 As \url{http://varianceexplained.org/r/trump-tweets/} this could be accomplised by a sentiment analysis. But it is already pretty clear that some devices use a very different language.
 
-\todo{}
- This graph shows how many times is it tweeted from Trumps twitter profile. It is noticeable that profile was more active before election and significantly decreased after election.
+
+When analyzing the twitter-wall of trump instead we observed the following.
+The graph shows how many times it is tweeted from Trumps twitter profile. It is noticeable that profile was more active before election and significantly decreased after election.
 
 The number of tweets over time
 <<label="textanalysis1", results='markup', cache=TRUE>>=
@@ -395,11 +394,7 @@ ggplot(data = tweets, aes(x = created)) +
                             high = "aquamarine4")
 @
 
-Wordcloud
-\todo{add new wrdcloud code from trumTwitteR.r   126-146 line of code}
-After filtering Trump tweets using libraries tm and wordcloud, wordcloud with mostly frequent used words is created. 
-
-
+An wordcloud from his wall looks like:
 <<label="termsx", results='markup', cache=TRUE>>=
 wordCorpus <- Corpus(VectorSource(tweets))
 wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
@@ -429,7 +424,7 @@ colnames(tweets3)
 which specify when, what and how e.g. by which device something was tweeted, as well as the type of tweet (mention, retweet).
 
 
-\todo{todo answer her questions}
+\todo{todo answer her questions and shorten this part (not so much bla bla)}
 Donald Trump is very controversial person and his success on presidential elections in USA in 2016 is still mystery to many people. He is nothing like any other president or presidential candidate in the past.  He does neither act or talk like a politician, rules for everyone else does not apply for him.  He had so many scandals, said so many things but he is still elected as the president of the United States of America. In his race he used social media but mostly Twitter to express his thought and feelings about various types of things. This all makes him very good topic for research in social media. There is so many data and papers written about this topic. We tried to analyze his behavior on Twitter after he is elected and also study Twitter partial network using hashtag trump.
 
   
