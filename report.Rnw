@@ -4,7 +4,7 @@
 \usepackage{hyperref}
 \begin{document}
 \title{Web Science TU Vienna graph analysis project}
-\author{Georg Heiler 1225063 | Jasmina Kadic}
+\author{Georg Heiler 1225063 | Jasmina Kadic 1620747}
 \maketitle
 \tableofcontents
 
@@ -162,7 +162,9 @@ For the bimodal graph statistics are
 calcStats(g_twitter_bimodal)
 @
 
-The bimodal graph contains a lot more edges ie. is bigger. \todo{summary, TODO compare graphs}
+From the results it is noticeable  that 
+bimodal network is bigger and better connected. Diameter and average distance between nodes are significantly smaller in bimodal network.
+Degree centrality counts hot many direct connections each node has to other nodes within the network, it is useful for finding individuals within the network who hold most informations, or who can connect with the wider network or are most popular.  Most influential nodes in network are calculated by in-degree centrality. These are profiles with most commented, mentioned or replied posts with most followers. It is interesting to see that Donald Trump is only fifth most  influential user in this data set. For finding nodes who are best placed to influence the entire network most quickly, closeness centrality is used. As expected Donald Trump is most influential in this network but interestingly enough he  does not have the  biggest score in eigenvector centrality. The node with most important edges is node with username \textit{funder}. This user has also biggest hub, authority and pagerank scores.  He has more than 45000 tweets and  majority are anti Trump tweets.
 
 \section{Visualization}
 Use different layouts to find and highlight patterns and relationships. To make sense of the data more easily, map the metrics and measures calculated onto visual properties such as size, colour, and opacity.
@@ -190,6 +192,7 @@ How did the network change? What dynamics can be
 identified? Are there critical events in the period observed?
 
 The same metrics as before are computed now, but for a new dataset collected several weeks later.
+
 loading of the new data
 <<label="0keep_longLoading", results='markup', cache=TRUE>>=
 load('tweets2.Rdata')
@@ -210,19 +213,24 @@ calcStats(g_twitter_bimodal)
 @
 
 
-\todo{summary and comparison with original data}
-some summary
+\todo{}
+Since data sets are gathered in close time periods and no important event has occurred in this period result are pretty much the same.
 
 \section{ego network analysis}
 \todo{add ego network visualization from gephi}
 
 \chapter{Text analysis}
 What do the users talk about? Are there any keywords/topics that are particularly important? Does this vary in different groups/communities? Are the discussions controversial?
-\todo{compare text analysis per group}
+\todo{}
 
-We try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an android device, most of the others are using iOS devices. 
+Most frequent words on 06.01.2017 were: maga, will, trump, intelligence, hacking, news, briefing, usa, election, theresistance. 
+After Meryl Streep had her speech on Golden Globes about Trump her mentions with hashtag Trump skyrocketed she is one of most frequently tweeted words on 10.01.2017 while searching twitter with trump hashtag. So even though there were no changes in 
+metrics the content of tweets is different.
+
+Apparently only Trump is using an android device, his staff uses iOS devices. 
+So it would be interesting to know who is actually typing the tweet.
 We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted their approach for our data.
-You can see the times when a tweet is posted form an android or ios device
+Following graph shows what time of day is tweeted from Android device and when is it tweeted from iOS device. It is visible, but not as much as in original data, that Trump tweets more in the morning while his staff is more active later in the day.
 <<terms123, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=FALSE, message=FALSE>>=
 tweets3 <- read_csv("tweets3.csv")
 @
@@ -244,7 +252,7 @@ tweetsSmall %>%
 
 @
 
-Pictures and links per device type. Compared with the original results from \url{http://varianceexplained.org/r/trump-tweets/} the reported gap between android and iOS has shrunk considerably.
+Next, it is analyzed if the tweets are containing picture or not. As seen on graph is it more likely that  tweet with picture will be tweeted by Trumps staff. Compared with the original results from \url{http://varianceexplained.org/r/trump-tweets/} the reported gap between android and iOS has shrunk considerably.
 
 <<label="terms2", results='markup', cache=TRUE>>=
 tweet_picture_counts <- tweetsSmall %>%
@@ -256,8 +264,7 @@ ggplot(tweet_picture_counts, aes(source, n, fill = picture)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "", y = "Number of tweets", fill = "")
 @
-
-Only few quoted tweets are published across devices
+Before election Trump had tendency to copy-paste other people tweets and then surround them with quotation marks. From our result it is visible he does not do that as much as before. Now only few quoted tweets are published across devices.
 <<label="terms3", results='markup', cache=TRUE>>=
 tweetsSmall %>%
   count(source,
@@ -268,7 +275,8 @@ tweetsSmall %>%
   ggtitle('Whether tweets start with a quotation mark (")')
 @
 
-Frequently tweeted words
+Frequently tweeted words overall.
+
 <<label="terms4", results='markup', cache=TRUE>>=
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
 tweet_words <- tweetsSmall %>%
@@ -288,7 +296,7 @@ tweet_words %>%
   coord_flip()
 @
 
-By device type
+Frequently tweeted words by device type.
 
 <<label="terms5", results='markup', cache=TRUE>>=
 android_iphone_ratios <- tweet_words %>%
@@ -313,8 +321,9 @@ android_iphone_ratios %>%
                     values = c("red", "lightblue"))
 @
 
-  - iphone is using more hashtags
-  - emotional words e.g. idiot, moron, ... are only common on android devices
+   Results are showing that tweets from iPhone are using more hashtags while tweets from 
+  Android include words moron and idiot. It is also noticeable that words from Android are much more frequently repeated.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % disabled because was very slow. Strange should have been quicker to compute.
@@ -339,7 +348,8 @@ android_iphone_ratios %>%
 
 As \url{http://varianceexplained.org/r/trump-tweets/} this could be accomplised by a sentiment analysis. But it is already pretty clear that some devices use a very different language.
 
-\todo{description}
+\todo{}
+ This graph shows how many times is it tweeted from Trumps twitter profile. It is noticeable that profile was more active before election and significantly decreased after election.
 
 The number of tweets over time
 <<label="textanalysis1", results='markup', cache=TRUE>>=
@@ -354,7 +364,9 @@ ggplot(data = tweets, aes(x = created)) +
 @
 
 Wordcloud
-\todo{filter data more}
+\todo{add new wrdcloud code from trumTwitteR.r   126-146 line of code}
+After filtering Trump tweets using libraries tm and wordcloud, wordcloud with mostly frequent used words is created. 
+
 
 <<label="termsx", results='markup', cache=TRUE>>=
 wordCorpus <- Corpus(VectorSource(tweets))
@@ -386,7 +398,19 @@ which specify when, what and how e.g. by which device something was tweeted, as 
 
 
 \todo{todo answer her questions}
+Donald Trump is very controversial person and his success on presidential elections in USA in 2016 is still mystery to many people. He is nothing like any other president or presidential candidate in the past.  He does neither act or talk like a politician, rules for everyone else does not apply for him.  He had so many scandals, said so many things but he is still elected as the president of the United States of America. In his race he used social media but mostly Twitter to express his thought and feelings about various types of things. This all makes him very good topic for research in social media. There is so many data and papers written about this topic. We tried to analyze his behavior on Twitter after he is elected and also study Twitter partial network using hashtag trump.
 
+  
+First step in this project was to gather data. Among others, we used SocialMediaLab and twitteR packages, to collect data and store them. We collected data in different period of time. While gathering data we crossed on “rate limit exceeded” error messages, because Twitter has a limit on number of data that can be collected at once. After this we did a statistical analysis of the network. 
+From the centrality measures results it is visible that a lot of data is from people who do not support Donald Trump. One specific node is very active in our network, with username funder, who has the biggest hub, authority,pagerank and degree centrality.
+
+Because a lot of people are intrigued by Donald Trump and they already did analysis of his Twitter account even with Twitter limitations for collecting data, we could compare our results from when Donald Trump was presidential candidate and now when he is elected. This was mostly visible with text analysis because our network did not structurally changed much, and metrics stated the same, but textual data are changing daily. 
+
+Most interesting part of textual analysis was to compare data of Trumps Twitter profile based on device it was Tweeted on. It is  known that Donald Trump uses Android phone and his staff uses iOS phones. From created graphs differences are  visually visible. It is noticeable from data that Trumps profile was more active before election. He used more copy-paste retweet method also before election while now he does not do that very frequently. It is also visible that Android tweets are more angrier with tendency to repeat same words more and ending tweets with description of the mood, while the iOS tweets tend to be announcements and contain more pictures.  
+
+Donald Trump tweets like “normal” person would. He tweets about his views but also about irrelevant TV and movie oriented entertainment and not like a most influential person in the world. He has no filter but he has to learn that now his (typed) words  have great consequences.
+
+You can delete last paragraph if you want.
 \chapter{other things}
 report (nearly complete)
 
