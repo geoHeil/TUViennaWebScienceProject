@@ -1,35 +1,6 @@
-# some stuff is from http://www.rdatamining.com/docs/twitter-analysis-with-r
-
-library(twitteR)
-library(tm)
-#library(ROAuth)
-library(wordcloud)
-
-#setup_twitter_oauth(	myapikey,#
-					#myapisecret,
-					#myaccesstoken,
-					#myaccesstokensecret)
-#################################################
-#tweets <- userTimeline("realDonaldTrump",n=10000)
-# convert tweets to data frame
-#tweets.df <- twListToDF(tweets)
-#write.csv(tweets.df, file = "data/trumpTweets.csv", row.names=F)
-#length(tweets)
-############ some user info
-user <- getUser("realDonaldTrump")
-user$toDataFrame()
-friends <- user$getFriends() # who this user follows
-followers <- user$getFollowers() # this user's followers
-####################################################
-tweets <- searchTwitter("#trump", n=10000)
-length(tweets)
-tweets.df <- twListToDF(tweets)
-write.csv(tweets.df, file = "data/trumpHashtagTweets.csv", row.names=F)
+############################# Nice plots (tewwts containing ##, quatation mark, number of tweets over time)
 
 tweets <- read.csv("data/trumpTweets.csv")
-library(ggplot2)
-library(lubridate)
-library(scales)
 
 ggplot(tweets, aes(factor(grepl("#", tweets$text)))) +
         geom_bar(fill = "midnightblue") + 
@@ -59,60 +30,164 @@ ggplot(data = tweets, aes(x = wday(created))) +
         xlab("Day of the Week") + ylab("Number of tweets") + 
         scale_fill_gradient(low = "midnightblue", high = "aquamarine4")
 
-
-############################### http://varianceexplained.org/r/trump-tweets/
+############################### 
  # https://www.r-bloggers.com/twitter-sentiment-analysis-with-r/
  # http://www.rdatamining.com/docs/twitter-analysis-with-r
- # http://varianceexplained.org/r/trump-tweets/
-
-library(dplyr)
-library(purrr)
-library(tidyr)
-
-tweets <- read.csv("data/trumpTweets.csv")
-
-# percentage of devices from which is tweeted
-# if device is Android that is Trump himself
-# if device is iPhone or anything else that is his staff
-device <- function(dataframe) {
-    tot_all <- length(dataframe$statusSource)
- 
-    Web <- 100*(length(grep("Twitter Web Client", dataframe$statusSource))/tot_all)
-    TweetDeck <- 100*(length(grep("TweetDeck", dataframe$statusSource))/tot_all)
-    iPhone <- 100*(length(grep("Twitter for iPhone", dataframe$statusSource))/tot_all)
-    iPad <- 100*(length(grep("Twitter for iPad", dataframe$statusSource))/tot_all)
-    Blackberry <- 100*(length(grep("Twitter for BlackBerry", dataframe$statusSource))/tot_all)
-    Tweetbot <- 100*(length(grep("Tweetbot for i", dataframe$statusSource))/tot_all)
-    Hootsuite <- 100*(length(grep("Hootsuite", dataframe$statusSource))/tot_all)
-    Android <- 100*(length(grep("Twitter for Android", dataframe$statusSource))/tot_all)
-    Ads <- 100*(length(grep("Twitter Ads", dataframe$statusSource))/tot_all)
-    M5 <- 100*(length(grep("Mobile Web (M5)", dataframe$statusSource))/tot_all)
-    Mac <- 100*(length(grep("Twitter for Mac", dataframe$statusSource))/tot_all)
-    Facebook <- 100*(length(grep("Facebook", dataframe$statusSource))/tot_all)
-    Instagram <- 100*(length(grep("Instagram", dataframe$statusSource))/tot_all)
-    IFTT <- 100*(length(grep("IFTT", dataframe$statusSource))/tot_all)
-    Buffer <- 100*(length(grep("Buffer", dataframe$statusSource))/tot_all)
-    CoSchedule <- 100*(length(grep("CoSchedule", dataframe$statusSource))/tot_all)
-    GainApp <- 100*(length(grep("Gain App", dataframe$statusSource))/tot_all)
-    MobileWeb <- 100*(length(grep("Mobile Web", dataframe$statusSource))/tot_all)
-    iOS <- 100*(length(grep("iOS", dataframe$statusSource))/tot_all)
-    OSX <- 100*(length(grep("OS X", dataframe$statusSource))/tot_all)
-    Echofon <- 100*(length(grep("Echofon", dataframe$statusSource))/tot_all)
-    Fireside <- 100*(length(grep("Fireside Publishing", dataframe$statusSource))/tot_all)
-    Google <- 100*(length(grep("Google", dataframe$statusSource))/tot_all)
-    MailChimp <- 100*(length(grep("MailChimp", dataframe$statusSource))/tot_all)
-    TwitterForWebsites <- 100*(length(grep("Twitter for Websites", dataframe$statusSource))/tot_all)
- 
-    percentages <- data.frame(Web, TweetDeck, iPhone, iPad, Blackberry, Tweetbot,
-               Hootsuite, Android, Ads, M5, Mac, Facebook, Instagram,
-               IFTT, Buffer, CoSchedule, GainApp, MobileWeb, iOS, OSX,
-               Echofon, Fireside, Google, MailChimp, TwitterForWebsites)
-    return(percentages) }
-
-trumpDevice <- sort(device(tweets), decreasing = T)
- 
 
 
-iPhone <- length(grep("Twitter for iPhone", tweets$statusSource))
-Android <- length(grep("Twitter for Android", tweets$statusSource))
+############################# Devices from which is tweeted 
+
+tweets3 <- read.csv("tweets3.csv")
+tweetsSmall <- tweets3 %>%
+  select(id, statusSource, text, created) %>%
+  extract(statusSource, "source", "Twitter for (.*?)<") %>%
+  filter(source %in% c("iPhone", "Android"))
+
+tweetsSmall %>%
+  count(source, hour = hour(with_tz(created, "EST"))) %>%
+  mutate(percent = n / sum(n)) %>%
+  ggplot(aes(hour, percent, color = source)) +
+  geom_line() +
+  scale_y_continuous(labels = percent_format()) +
+  labs(x = "Hour of day (EST)",
+       y = "% of tweets",
+       color = "")
+
+
+tweet_picture_counts <- tweetsSmall %>%
+  filter(!str_detect(text, '^"')) %>%
+  count(source,
+        picture = ifelse(str_detect(text, "t.co"),
+                         "Picture/link", "No picture/link"))
+ggplot(tweet_picture_counts, aes(source, n, fill = picture)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "", y = "Number of tweets", fill = "")
+
+tweetsSmall %>%
+  count(source,
+        quoted = ifelse(str_detect(text, '^"'), "Quoted", "Not quoted")) %>%
+  ggplot(aes(source, n, fill = quoted)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "", y = "Number of tweets", fill = "") +
+  ggtitle('Whether tweets start with a quotation mark (")')
+
+
+tweet_words %>%
+  count(word, sort = TRUE) %>%
+  head(20) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_bar(stat = "identity") +
+  ylab("Occurrences") +
+  coord_flip()
+
+library(tidytext)
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
+tweet_words <- tweetsSmall %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+tweet_words
+
+android_iphone_ratios <- tweet_words %>%
+  count(word, source) %>%
+  filter(sum(n) >= 5) %>%
+  spread(source, n, fill = 0) %>%
+  ungroup() %>%
+  mutate_each(funs((. + 1) / sum(. + 1)), -word) %>%
+  mutate(logratio = log2(Android / iPhone)) %>%
+  arrange(desc(logratio))
+
+
+########################
+wordCorpus <- Corpus(VectorSource(tweet_words))
+tdm <- TermDocumentMatrix(wordCorpus,
+                          control = list(wordLengths = c(1, Inf)))
+term.freq <- rowSums(as.matrix(tdm))
+term.freq <- subset(term.freq, term.freq >= 20)
+df <- data.frame(term = names(term.freq), freq = term.freq)
+ggplot(df, aes(x=term, y=freq)) +
+  geom_bar(stat="identity") +
+  xlab("Terms") +
+  ylab("Count") +
+  coord_flip() 
+
+m <- as.matrix(tdm)
+word.freq <- sort(rowSums(m), decreasing = T)
+pal <- brewer.pal(9, "BuGn")[-(1:4)]
+
+wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3, random.order = F, colors = pal)
+
+######################### Wordcloud
+
+nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
+wordCorpus <- Corpus(VectorSource(nohandles))
+wordCorpus <- tm_map(wordCorpus,content_transformer(function(x) iconv(x, to='UTF-8', sub='byte')),mc.cores=1)
+
+wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus, removeWords, c("trump","realdonaldtrump"))
+
+
+pal <- brewer.pal(9,"Reds")
+pal <- pal[-(1:4)]
+set.seed(123)
+
+# pal <- brewer.pal(9, "BuGn")[-(1:4)]
+
+wordcloud(words = wordCorpus, scale=c(6,0.1), max.words=250, random.order=FALSE, 
+          rot.per=0.35, use.r.layout=FALSE, colors=pal)
+
+tdm <- TermDocumentMatrix(wordCorpus, control = list(wordLengths = c(1, Inf)))
+(freq.terms <- findFreqTerms(tdm, lowfreq = 20))
+term.freq <- rowSums(as.matrix(tdm))
+term.freq <- subset(term.freq, term.freq >= 20)
+df <- data.frame(term = names(term.freq), freq = term.freq)
+ggplot(df, aes(x=term, y=freq)) + geom_bar(stat="identity") + xlab("Terms") + ylab("Count") + coord_flip() 
+
+############################ Visualizating Twitter history with streamgraph
+
+	tweets_df <- read.csv("data/trumpTweets.csv")%>%
+   select(created, text) %>%
+   mutate(text = tolower(text))
+
+# Pick hashtags with regexp
+hashtags_list <- regmatches(tweets_df$text, gregexpr("#[[:trump:]]+", tweets_df$text))
+hashtags_list <- regmatches(tweets_df$text, gregexpr("#trump", tweets_df$text))
+
+
+hashtag_list <- aes(factor(grepl("#trump", tweets$text)))
+
+
+# Create a new data_frame with (timestamp, hashtag) -pairs
+hashtags_df <- data_frame()
+for (i in which(sapply(hashtags_list, length) > 0)) {
+  hashtags_df <- bind_rows(hashtags_df, data_frame(timestamp = tweets_df$created[i],
+                                                   hashtag = hashtags_list[[i]]))
+}
+
+# Process data for plotting
+hashtags_df <- hashtags_df %>%
+  # Pick top 20 hashtags
+  filter(hashtag %in% names(sort(table(hashtag), decreasing=TRUE))[1:20]) %>%
+  # Group by year-month (daily is too messy)
+  # Need to add '-01' to make it a valid date for streamgraph
+  mutate(yearmonth = paste0(format(as.Date(timestamp), format="%Y-%m"), "-01")) %>%
+  group_by(yearmonth, hashtag) %>%
+  summarise(value = n())
+
+# Create streamgraph
+sg <- streamgraph(data = hashtags_df, key = "hashtag", value = "value", date = "yearmonth",
+                 offset = "silhouette", interpolate = "cardinal",
+                 width = "700", height = "400") %>%
+  sg_legend(TRUE, "hashtag: ") %>%
+  sg_axis_x(tick_interval = 1, tick_units = "year", tick_format = "%Y")
+
+
 
