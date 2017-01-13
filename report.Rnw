@@ -2,6 +2,7 @@
 
 \usepackage{todonotes}
 \usepackage{hyperref}
+\usepackage{svg}
 \begin{document}
 \title{Web Science TU Vienna graph analysis project}
 \author{Georg Heiler 1225063 | Jasmina Kadic}
@@ -169,7 +170,8 @@ Use different layouts to find and highlight patterns and relationships. To make 
 
 Gephi was used for the visualization in Figure \ref{fig:plotActor}.
 as well as for Figure \ref{fig:plotBimodal}.
-We used the degree filter in gephi to filter the graph to a minimal degreee and to remove nodes with very few connections.
+We used the degree filter in gephi to filter the graph to a minimal degreee and to remove nodes with very few connections after the Giant Component filter to make sur to include only the main vertices.
+The edges are coloured with the type of connection (retweet, mention).
 
 \begin{figure}[h]
   \centering
