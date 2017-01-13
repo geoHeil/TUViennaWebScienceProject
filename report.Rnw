@@ -216,7 +216,9 @@ calcStats(g_twitter_bimodal)
 some summary
 
 \section{ego network analysis}
-We chose to analyze the ego network of donald trump. To perform the analysis 
+We chose to analyze the ego network of donald trump. To perform the analysis gephi's ego network operator was used. The id of \@realDonaldTrump is n9830 even though about 5 similar accounts are involved we chose that one as the source for our ego network which was generated with an depth of 1. The result can be seen in igure \ref{fig:plotActorEgo}. Nodes are coloured by modularity class obtained from gephis statistical analysis capabilities. Additionally pagerank is visualized as the size of vertices.
+
+Again edges were coded in red for retweets and green for mentions.
 
 \begin{figure}[h]
   \centering
