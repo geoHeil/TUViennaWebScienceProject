@@ -385,7 +385,7 @@ We were following along with \url{http://varianceexplained.org/r/trump-tweets/} 
 You can see the times when a tweet is posted from an Android or iOS device.
 
 <<terms123, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=TRUE, message=FALSE>>=
-tweets3 <- read_csv("tweets3.csv")
+tweets3 <- read.csv("data/trumpTweets.csv")
 @
 <<label="terms", results='markup', cache=TRUE>>=
 tweetsSmall <- tweets3 %>%
