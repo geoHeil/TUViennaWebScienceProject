@@ -163,13 +163,76 @@ For the bimodal graph statistics are
 calcStats(g_twitter_bimodal)
 @
 
-\todo{rework this summary and include reference to bimodal vs actor network}
+
 From the results it is noticeable  that the 
-bimodal network is bigger and better connected. Diameter and average distance between nodes are significantly smaller.
-Degree centrality counts how many direct connections each node has to other nodes within the network. 
-This is useful for finding individuals within the network who hold most informations, or who can connect with the wider network or are most popular.  Most influential nodes in network are calculated by in-degree centrality. These are profiles with most commented, mentioned or replied posts with most followers. It is interesting to see that Donald Trump is only fifth most  influential user in this data set. \todo{check especially actor vs bimodal try to explain why} 
-To find which nodes are best placed to influence the entire network most quickly, closeness centrality is used.
-As expected Donald Trump is most influential in this network but interestingly enough he does not have the  biggest score in eigenvector centrality. The node with most important edges is node with username \textit{funder}. This user has also biggest hub, authority and pagerank scores.  He has more than 45000 tweets and  majority are anti Trump tweets.
+bimodal network is bigger and better connected.
+
+<<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+	 g1 <- read.graph("actorNetwork.graphml", format = "graphml")
+ 	 g2 <- read.graph("bimodalNetwork.graphml", format = "graphml")
+ 	 print(paste("Number of vertices of actor network:", vcount(g1)))
+	 print(paste("Number of edges of actor network:", ecount(g1)))
+	 print(paste("Number of vertices of bimodal network:", vcount(g2)))
+	 print(paste("Number of edges of bimodal network:", ecount(g2)))
+@
+ 
+To calculate the shortest path in the network function mean_distance is used, and for calculating longest path between two nodes in the network we used function diameter.
+
+<<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+  print(paste("Average distance of actor network:",mean_distance(g1, directed=T)))
+  print(paste("Average distance of bimodal network:",mean_distance(g2, directed=T)))
+  print(paste("Diameter of actor network:", diameter(g1, directed=T)))
+  print(paste("Diameter of bimodal network:", diameter(g2, directed=T)))
+@
+
+
+Degree centrality counts how many direct connections each node has to other nodes within the network. This is useful for finding individuals within the network who hold most informations, or who can connect with the wider network or are most popular.  Most influential nodes in network are calculated by in-degree centrality. In actor network 
+most influential nodes are:
+
+<<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+  deg <- igraph::degree(g1)
+  deg_in <- igraph::degree(g1, mode = "in")
+  print("In-degree centrality (from highest to lowest)")
+  print(sort(deg_in, decreasing = T)[1:10])
+@
+These are profiles with most commented, mentioned or replied posts with most followers. It is interesting to see that Donald Trump is only fifth most  influential user in this data set. 
+
+Nodes with biggest in-degree centrality in bimodal network are:
+
+<<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+  deg <- igraph::degree(g2)
+  deg_in <- igraph::degree(g2, mode = "in")
+  print("In-degree centrality (from highest to lowest)")
+  print(sort(deg_in, decreasing = T)[1:10])
+@
+
+To find which nodes are best placed to influence the entire network most quickly, closeness centrality is used. In actor network nodes with the biggest in-closeness centrality are:
+
+<<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+	clos_in <- igraph::closeness(g1, mode = "in") 
+    print("In-closeness centrality (from highest to lowest)")
+    print(sort(clos_in, decreasing = T)[1:10])
+@
+
+ In bimodal network:
+
+<<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+	clos_in <- igraph::closeness(g2, mode = "in") 
+    print("In-closeness centrality (from highest to lowest)")
+    print(sort(clos_in, decreasing = T)[1:10])
+@
+ 
+
+As expected Donald Trump is most influential in this network but interestingly enough he does not have the  biggest score in eigenvector centrality. 
+
+<<label="0keep_metricsNumberVerticesSlow", results='markup', cache=TRUE>>=
+  eig <- eigen_centrality(g1, directed=T)$vector
+  print("Eigenvector centrality (from highest to lowest)")
+  print(sort(eig, decreasing = T)[1:10])
+@
+
+While calculating eigenvector centrality some nodes are more relative than others, and, reasonably, endorstments from important nodes count more. Eigenvector centrality definition sayst that a node is important if it is linked to by other important nodes.
+The node with most important edges, with biggest eigenvector centrality score, is node with username \textit{funder}. This user has also biggest hub, authority and pagerank scores.  He has more than 45000 tweets and  majority are anti Trump tweets.
 
 \section{Visualization}
 Gephi was used for the visualization in Figure \ref{fig:plotActor}.
@@ -212,7 +275,7 @@ and  for the bimodal version of the graph
 calcStats(g_twitter_bimodal)
 @
 
-\todo{check for critical events in that period maybe xmas / his new year?, she wanted us to specifically have something like that. we should at least make someting up}
+\todo{Metrics are identical. Fell free to make something up. Go nuts :D}
 Since data sets are gathered in close time periods and no important event has occurred in this period result are pretty much the same.
 
 \section{ego network analysis}
@@ -229,60 +292,98 @@ Again edges were coded in red for retweets and green for mentions.
 \end{figure}
 
 \chapter{Text analysis}
-\todo{check this, add communities}
-\todo{do not write about most frequent words but rather show the plots here}
-Most frequent words on 06.01.2017 were: maga, will, trump, intelligence, hacking, news, briefing, usa, election, theresistance. 
-After Meryl Streep had her speech on Golden Globes about Trump her mentions with hashtag Trump skyrocketed she is one of most frequently tweeted words on 10.01.2017 while searching twitter with trump hashtag. So even though there were no changes in 
-metrics the content of tweets is different.
+	For visualization of the most frequent words, contained in tweets, libraries wordcloud and tm are used. Wordcloud is relatively simple to make but it is important to do some text manipulation first (cleaning and formating tweets). 
 
-% strange chace=TRUE does not work
-<<label="wordcloud", results='markup', cache=FALSE, warning=FALSE>>=
-nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
-wordCorpus <- Corpus(VectorSource(nohandles))
-wordCorpus <- tm_map(wordCorpus,
-    content_transformer(function(x) iconv(x,
-                        to='UTF-8',
-                        sub='byte')),
-                     mc.cores=1)
-wordCorpus <- tm_map(wordCorpus,
-      removePunctuation,lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus,
-      content_transformer(tolower),lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus,
-      removeWords, stopwords("english"),lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus,
-      removeNumbers,lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus,
-     stripWhitespace,lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus,
-     removeWords, c("trump","realdonaldtrump"))
-wordCorpus <- tm_map(wordCorpus,
-    removeWords, c("the", "https","httpst","like","one"))
+	Wordcloud with mostly frequent words from Donald Trump:
+
+	<<label="wordcloud", results='markup', cache=FALSE, warning=FALSE>>=
+	tweets <- read.csv("data/trumpTweets.csv")
+	nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
+	wordCorpus <- Corpus(VectorSource(nohandles))
+	wordCorpus <- tm_map(wordCorpus,content_transformer(function(x) iconv(x, to='UTF-8', sub='byte')),mc.cores=1)
+
+	wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeWords, c("trump","realdonaldtrump","the","like","http","https","httpst"))
 
 
-tdm <- TermDocumentMatrix(wordCorpus,
-        control = list(wordLengths = c(1, Inf)))
-term.freq <- rowSums(as.matrix(tdm))
-term.freq <- subset(term.freq,
-                    term.freq >= 20)
-df <- data.frame(term = names(term.freq),
-                 freq = term.freq)
-m <- as.matrix(tdm)
-word.freq <- sort(rowSums(m),
-                  decreasing = T)
-pal <- brewer.pal(9, "BuGn")[-(1:4)]
+	pal <- brewer.pal(9,"Reds")
+	pal <- pal[-(1:4)]
+	set.seed(123)
 
-wordcloud(words = names(word.freq),
-          freq = word.freq,
-          min.freq = 3,
-          random.order = F,
-          colors = pal,
-          max.words = 300)
+	wordcloud(words = wordCorpus, scale=c(6,0.1), max.words=250, random.order=FALSE, 
+	          rot.per=0.35, use.r.layout=FALSE, colors=pal)
+
+	@
+
+	Most frequent words can also be ploted using TermDocumentMatrix. For Trump tweets graph is given below.
+
+	<<label="wordcloud", results='markup', cache=FALSE, warning=FALSE>>=
+		tdm <- TermDocumentMatrix(wordCorpus, control = list(wordLengths = c(1, Inf)))
+	(freq.terms <- findFreqTerms(tdm, lowfreq = 20))
+	term.freq <- rowSums(as.matrix(tdm))
+	term.freq <- subset(term.freq, term.freq >= 20)
+	df <- data.frame(term = names(term.freq), freq = term.freq)
+	ggplot(df, aes(x=term, y=freq)) + geom_bar(stat="identity") + xlab("Terms") + ylab("Count") + coord_flip() 
 @
+	Next it would be interesting to see how does a wordcloud looks like with data that contain hashtag trump. This data set contains 10 000 tweets but we are showing only 250 most frequent words.
+	<<label="wordcloud", results='markup', cache=FALSE, warning=FALSE>>=
+	tweets <- read.csv("data/trumpHashtagTweets.csv")
+	nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
+	wordCorpus <- Corpus(VectorSource(nohandles))
+	wordCorpus <- tm_map(wordCorpus,content_transformer(function(x) iconv(x, to='UTF-8', sub='byte')),mc.cores=1)
 
-We try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an android device, most of the others are using iOS devices. 
-We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted their approach for our data.
-You can see the times when a tweet is posted form an android or ios device
+	wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeWords, c("trump","realdonaldtrump","the","like","http","https","httpst"))
+
+
+	pal <- brewer.pal(9,"Reds")
+	pal <- pal[-(1:4)]
+	set.seed(123)
+
+	wordcloud(words = wordCorpus, scale=c(6,0.1), max.words=250, random.order=FALSE, 
+	          rot.per=0.35, use.r.layout=FALSE, colors=pal)
+	@
+
+	After Meryl Streep had her speech on Golden Globes about Trump her mentions with hashtag trump skyrocketed she is one of most frequently tweeted words on 10.01.2017 while searching twitter with trump hashtag. So even though there were no changes in 
+	metrics the content of tweets is different. This data set contains more that 18 000 tweets.
+
+	<<label="wordcloud", results='markup', cache=FALSE, warning=FALSE>>=
+	tweets <- read.csv("tweets3.csv")
+	nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
+	wordCorpus <- Corpus(VectorSource(nohandles))
+	wordCorpus <- tm_map(wordCorpus,content_transformer(function(x) iconv(x, to='UTF-8', sub='byte')),mc.cores=1)
+
+	wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
+	wordCorpus <- tm_map(wordCorpus, removeWords, c("trump","realdonaldtrump","the","like","http","https","httpst","httpstco","htt"))
+
+
+	pal <- brewer.pal(9,"Reds")
+	pal <- pal[-(1:4)]
+	set.seed(123)
+
+	wordcloud(words = wordCorpus, scale=c(6,0.1), max.words=250, random.order=FALSE, 
+	          rot.per=0.35, use.r.layout=FALSE, colors=pal)
+
+	@
+
+
+
+We try to figure out if the real Trump is tweeting or one of his co-workers. Apparently only Trump is using an Android device, his staff are using iOS devices. 
+We were following along with \url{http://varianceexplained.org/r/trump-tweets/} and adopted  approach for our data.
+You can see the times when a tweet is posted from an Android or iOS device.
+
 <<terms123, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=TRUE, message=FALSE>>=
 tweets3 <- read_csv("tweets3.csv")
 @
@@ -394,28 +495,15 @@ ggplot(data = tweets, aes(x = created)) +
                             high = "aquamarine4")
 @
 
-An wordcloud from his wall looks like:
-<<label="termsx", results='markup', cache=TRUE>>=
-wordCorpus <- Corpus(VectorSource(tweets))
-wordCorpus <- tm_map(wordCorpus, removePunctuation,lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus, content_transformer(tolower),lazy=TRUE)
-
-wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"),lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus, removeNumbers,lazy=TRUE)
-wordCorpus <- tm_map(wordCorpus, stripWhitespace,lazy=TRUE)
-
-tdm <- TermDocumentMatrix(wordCorpus, control = list(wordLengths = c(1, Inf)))
-m <- as.matrix(tdm)
-word.freq <- sort(rowSums(m), decreasing = T)
-pal <- brewer.pal(9, "BuGn")[-(1:4)]
-
-wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3, random.order = F, colors = pal)
-@
 
 \chapter{Discussion and conclusion}
 What about the quality of the data? What are the limitations? What questions can be answered and what new insights can be gained by analyzing the structure of the networks? What nodes are in strategic locations? What can you tell about the communities identified? What do you learn by looking at the different networks? Why is it interesting to combine the information from structural and textual data? Interpret and discuss your findings!
 
-The quality of the data is rather good. Without the `SocialMediaLab` package for R it would have been complex to generate the graph from the collected tweets. With  it this was an easy task and we were able to compute several "views" e.g. an actor and a bimodal graph from the same type of underlying data.
+
+Donald Trump is very controversial person and his success on presidential elections in USA in 2016 is still mystery to many people. In his race he used social media but mostly Twitter to express his thought and feelings about various types of things. This all makes him very good topic for research in social media. There is so many data and papers written about this topic. We tried to analyze his behavior on Twitter after he is elected and also study Twitter partial network using hashtag trump.
+
+  
+First step in this project was to gather data. Among others, we used SocialMediaLab and twitteR packages, to collect data and store them. We collected data in different period of time. While gathering data we crossed on “rate limit exceeded” error messages, because Twitter has a limit on number of data that can be collected at once.The quality of the data is rather good. Without the `SocialMediaLab` package for R it would have been complex to generate the graph from the collected tweets. With  it this was an easy task and we were able to compute several "views" e.g. an actor and a bimodal graph from the same type of underlying data.
 
 The twitter graph data contains a lot of columns
 <<label="colnames", results='markup', cache=TRUE>>=
@@ -423,25 +511,48 @@ colnames(tweets3)
 @
 which specify when, what and how e.g. by which device something was tweeted, as well as the type of tweet (mention, retweet).
 
+After this we did a statistical analysis of the network. 
+From the centrality measures results it is visible that a lot of data is from people who do not support Donald Trump. Next to realDonaldTrump one specific node is very active in our actor network, with username funder, who has the biggest hub, authority,pagerank, eigenvector and degree centrality.
 
-\todo{todo answer her questions and shorten this part (not so much bla bla)}
-Donald Trump is very controversial person and his success on presidential elections in USA in 2016 is still mystery to many people. He is nothing like any other president or presidential candidate in the past.  He does neither act or talk like a politician, rules for everyone else does not apply for him.  He had so many scandals, said so many things but he is still elected as the president of the United States of America. In his race he used social media but mostly Twitter to express his thought and feelings about various types of things. This all makes him very good topic for research in social media. There is so many data and papers written about this topic. We tried to analyze his behavior on Twitter after he is elected and also study Twitter partial network using hashtag trump.
+<<label="colnames", results='markup', cache=TRUE>>=
+ g1 <- read.graph("actorNetwork.graphml", format = "graphml")
+ g2 <- read.graph("bimodalNetwork.graphml", format = "graphml")
+ eig <- eigen_centrality(g1, directed=T)$vector
+  print("Most influential nodes (from highest to lowest)")
+  print(sort(eig, decreasing = T)[1:10])
+@
 
-  
-First step in this project was to gather data. Among others, we used SocialMediaLab and twitteR packages, to collect data and store them. We collected data in different period of time. While gathering data we crossed on “rate limit exceeded” error messages, because Twitter has a limit on number of data that can be collected at once. After this we did a statistical analysis of the network. 
-From the centrality measures results it is visible that a lot of data is from people who do not support Donald Trump. One specific node is very active in our network, with username funder, who has the biggest hub, authority,pagerank and degree centrality.
+Betweenness centrality quantifies the number of times a node acts as a bridge along the shortest path between two other nodes. Nodes that can connect biggest number of people are in actor network are:
+
+<<label="colnames", results='markup', cache=TRUE>>=
+ g1 <- read.graph("actorNetwork.graphml", format = "graphml")
+ g2 <- read.graph("bimodalNetwork.graphml", format = "graphml")
+  betw <- igraph::betweenness(g1, directed=T) 
+  print("Betweeness centrality (from highest to lowest)")
+  print(sort(betw, decreasing = T)[1:10])
+@
+
+Actor network has 1062 communities.
+
+<<label="colnames", results='markup', cache=TRUE>>=
+ g1 <- read.graph("actorNetwork.graphml", format = "graphml")
+ g2 <- read.graph("bimodalNetwork.graphml", format = "graphml")
+c <- igraph::components(g1, mode = 'weak')
+c$no
+summary(c$csize)
+sort(c$csize, decreasing = T)[1:10]
+@
+
 
 Because a lot of people are intrigued by Donald Trump and they already did analysis of his Twitter account even with Twitter limitations for collecting data, we could compare our results from when Donald Trump was presidential candidate and now when he is elected. This was mostly visible with text analysis because our network did not structurally changed much, and metrics stated the same, but textual data are changing daily. 
 
 Most interesting part of textual analysis was to compare data of Trumps Twitter profile based on device it was Tweeted on. It is  known that Donald Trump uses Android phone and his staff uses iOS phones. From created graphs differences are  visually visible. It is noticeable from data that Trumps profile was more active before election. He used more copy-paste retweet method also before election while now he does not do that very frequently. It is also visible that Android tweets are more angrier with tendency to repeat same words more and ending tweets with description of the mood, while the iOS tweets tend to be announcements and contain more pictures.  
 
-Donald Trump tweets like “normal” person would. He tweets about his views but also about irrelevant TV and movie oriented entertainment and not like a most influential person in the world. He has no filter but he has to learn that now his (typed) words  have great consequences.
 
-You can delete last paragraph if you want.
 \chapter{other things}
 report (nearly complete)
 
 code (included in report)
 
-presentation \todo{prepare, I suggest sort of interactive mode}
+presentation 
 \end{document}
