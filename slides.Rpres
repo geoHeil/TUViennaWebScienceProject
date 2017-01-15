@@ -4,25 +4,120 @@ author: web science
 date: 17.01.2016
 autosize: true
 
-Overview of the data
+Mention follower (bimodal)
 ========================================================
 
-For more details on authoring R presentations please visit <https://support.rstudio.com/hc/en-us/articles/200486468>.
+![mention follower](slides-figure/trumpBig.jpg)
 
-- some plots
-- Bullet 2
-- Bullet 3
-
-Text analysis
+interaction (actor)
 ========================================================
 
-```{r}
-summary(cars)
+![mention follower](slides-figure/bimdalBig.jpg)
+
+ego network
+========================================================
+
+![mention follower](slides-figure/egoBig.jpg)
+
+
+Trumps wordcloud
+========================================================
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr", "readr", "tidytext")
+has   <- wants %in% rownames(installed.packages())
+if(any(!has)) install.packages(wants[!has])
+lapply(wants, library, character.only=T)
+```
+
+```{r, echo=FALSE}
+tweets <- read.csv("data/trumpTweets.csv")
+nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
+wordCorpus <- Corpus(VectorSource(nohandles))
+wordCorpus <- tm_map(wordCorpus,
+          content_transformer(function(x) iconv(x,
+              to='UTF-8',
+              sub='byte')),
+          mc.cores=1)
+wordCorpus <- tm_map(wordCorpus,
+                     removePunctuation
+                     ,lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     content_transformer(tolower),
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     removeWords,
+                     stopwords("english"),
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     removeNumbers,
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     stripWhitespace,
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     removeWords,
+  c("trump","realdonaldtrump","the",
+    "like","http","https","httpst"))
+pal <- brewer.pal(9,"Reds")
+pal <- pal[-(1:4)]
+set.seed(123)
+wordcloud(words = wordCorpus, scale=c(6,0.1),
+          max.words=250,
+          random.order=FALSE,
+          rot.per=0.35,
+          use.r.layout=FALSE,
+          colors=pal)
+```
+
+#trump hashtag wordcloud
+========================================================
+
+```{r, echo=FALSE}
+tweets <- read.csv("data/trumpHashtagTweets.csv")
+nohandles <- str_replace_all(tweets$text, "@\\w+", "") 
+wordCorpus <- Corpus(VectorSource(nohandles))
+wordCorpus <- tm_map(wordCorpus,
+  content_transformer(function(x) iconv(x,
+         to='UTF-8',
+         sub='byte')),
+  mc.cores=1)
+wordCorpus <- tm_map(wordCorpus,
+                     removePunctuation,
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     content_transformer(tolower),
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     removeWords,
+                     stopwords("english"),
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     removeNumbers,
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     stripWhitespace,
+                     lazy=TRUE)
+wordCorpus <- tm_map(wordCorpus,
+                     removeWords,
+  c("trump","realdonaldtrump","the",
+    "like","http","https","httpst"))
+pal <- brewer.pal(9,"Reds")
+pal <- pal[-(1:4)]
+set.seed(123)
+wordcloud(words = wordCorpus,
+          scale=c(6,0.1),
+          max.words=250,
+          random.order=FALSE, 
+	       rot.per=0.35,
+	       use.r.layout=FALSE,
+	       colors=pal)
 ```
 
 iphone analysis who is tweeting
 ========================================================
 - combination of graph with text
+
+ TODO add some more cool graphs
 ```{r, echo=FALSE}
 plot(cars)
 ```
