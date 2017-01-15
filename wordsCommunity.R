@@ -73,16 +73,13 @@ E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Mention"] <- ms$text
 E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Reply"] <- rpls$text
 
 # this creates a sub cluster
-# TODO iterate over the top 3 clusters (or coose any other)
 # and just execute the wordcount code
-subCluster <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership == which.max(c$csize))])
-makeWordcloud(E(subCluster)$text)
+# subCluster <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership == which.max(c$csize))])
+subCluster1 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[1])])
+subCluster2 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[2])])
+subCluster3 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[3])])
+makeWordcloud(E(subCluster1)$text)
+makeWordcloud(E(subCluster2)$text)
+makeWordcloud(E(subCluster3)$text)
 # TODO how to access tweets / text object wihtin cluster
 # open question here: http://stackoverflow.com/questions/41661096/subgraph-text-analysis-in-r-igraph
-
-#for(index in 0:2) {
-#  print(index)
-# TODO find biggest 3 cluster ids? how?
-which(c$membership %in% order(c$csize, decreasing = TRUE)[1:3])
-subCluster <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership == which.max(c$csize))])
-makeWordcloud(E(subCluster)$text)
