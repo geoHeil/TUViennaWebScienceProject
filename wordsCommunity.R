@@ -14,7 +14,7 @@ summary(c$csize)
 sort(c$csize, decreasing = T)[1:10]
 
 makeWordcloud <- function(t){
-  nohandles <- str_replace_all(t$text, "@\\w+", "") 
+  nohandles <- str_replace_all(t, "@\\w+", "") 
   wordCorpus <- Corpus(VectorSource(nohandles))
   wordCorpus <- tm_map(wordCorpus,
                        content_transformer(function(x) iconv(x,
@@ -52,16 +52,38 @@ makeWordcloud <- function(t){
             use.r.layout=FALSE,
             colors=pal)
 }
-makeWordcloud(tweets)
+
+#http://stackoverflow.com/questions/41661096/subgraph-text-analysis-in-r-igraph/41664330#41664330
+#unique(E(g_twitter_actor)$edgeType)
+library(reshape2); library(dplyr)
+#Make data frame for retweets, mentions, replies
+rts <- tweets %>% filter(!is.na(retweet_from))
+ms <- tweets %>% filter(users_mentioned!="character(0)")
+rpls <- tweets %>% filter(!is.na(reply_to))
+
+#Name each element in the users_mentioned list after the user who mentioned
+names(ms$users_mentioned) <- ms$screen_name
+ms <- melt(ms$users_mentioned) #melting creates a data frame for each user and the users they mention
+
+#Add the text
+ms$text <- tweets[match(ms$L1,tweets$screen_name),1]
+
+E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Retweet"] <- rts$text
+E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Mention"] <- ms$text
+E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Reply"] <- rpls$text
+
 # this creates a sub cluster
 # TODO iterate over the top 3 clusters (or coose any other)
 # and just execute the wordcount code
 subCluster <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership == which.max(c$csize))])
-
+makeWordcloud(E(subCluster)$text)
 # TODO how to access tweets / text object wihtin cluster
 # open question here: http://stackoverflow.com/questions/41661096/subgraph-text-analysis-in-r-igraph
 
-for(index in 0:2) {
-  print(index)
-  # TODO use subcluster here
-}
+#for(index in 0:2) {
+#  print(index)
+# TODO find biggest 3 cluster ids? how?
+subCluster <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership == which.max(c$csize))])
+makeWordcloud(E(subCluster)$text)
+
+table(c$csize)

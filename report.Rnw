@@ -17,7 +17,7 @@
 
 \chapter{Data Analysis and visualisation}
 <<librariesLoading, echo=FALSE, cache=TRUE, warning=FALSE, results='hide', cache=FALSE, message=FALSE>>=
-wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr", "readr", "tidytext")
+wants <- c("SocialMediaLab", "magrittr", "igraph", "ggplot2", "wordcloud", "tm", "stringr", "lubridate", "scales", "dplyr", "purrr", "tidyr", "readr", "tidytext", "reshape2")
 has   <- wants %in% rownames(installed.packages())
 if(any(!has)) install.packages(wants[!has])
 lapply(wants, library, character.only=T)
