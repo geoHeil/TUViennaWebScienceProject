@@ -543,7 +543,8 @@ tweetsSmall %>%
        color = "")
 @
 
-Next, it is analyzed if the tweets are containing picture or not. As seen on graph is it more likely that  tweet with picture will be tweeted by Trumps staff. Compared with the original results from \url{http://varianceexplained.org/r/trump-tweets/} the reported gap between android and iOS has shrunk considerably. \todo{this requires a update as well as we are now using trumps wall tweets instead of hashtag}
+Next, it is analyzed if the tweets are containing picture or not. From graph it is visible that 
+most of tweets with pictures are tweeted from iOS device.
 
 <<label="terms2", results='markup', cache=TRUE>>=
 tweet_picture_counts <- tweetsSmall %>%
@@ -556,8 +557,7 @@ ggplot(tweet_picture_counts, aes(source, n, fill = picture)) +
   labs(x = "", y = "Number of tweets", fill = "")
 @
 
-Before election Trump had tendency to copy-paste other people tweets and then surround them with quotation marks. From our result it is visible he does not do that as much as before. Now only few quoted tweets are published across devices.
-\todo{text is no longer valid, still same problem}
+Before election Trump had tendency to copy-paste other people tweets and then surround them with quotation marks. From our result it is visible he does not do that as much as before. Now only few quoted tweets are published across devices but still more from Android device.
 <<label="terms3", results='markup', cache=TRUE>>=
 tweetsSmall %>%
   count(source,
@@ -639,7 +639,6 @@ ggplot(data = tweets, aes(x = created)) +
 
 
 \chapter{Discussion and conclusion}
-\todo{answer remaining questions}
 What can you tell about the communities identified? What do you learn by looking at the different networks?
 
 

@@ -113,15 +113,97 @@ wordcloud(words = wordCorpus,
 	       colors=pal)
 ```
 
-iphone analysis who is tweeting
+device analysis androdid vs iOS: when is tweeted
 ========================================================
-- combination of graph with text
 
- TODO add some more cool graphs
+
 ```{r, echo=FALSE}
-plot(cars)
-```
+tweetsSmall <- tweets3 %>%
+  select(id, statusSource, text, created) %>%
+  extract(statusSource, "source", "Twitter for (.*?)<") %>%
+  filter(source %in% c("iPhone", "Android"))
+tweetsSmall$created <- ymd_hms(tweetsSmall$created)
 
+tweetsSmall %>%
+  count(source, hour = hour(with_tz(created, "EST"))) %>%
+  mutate(percent = n / sum(n)) %>%
+  ggplot(aes(hour, percent, color = source)) +
+  geom_line() +
+  scale_y_continuous(labels = percent_format()) +
+  labs(x = "Hour of day (EST)",
+       y = "% of tweets",
+       color = "")
+```
+device analysis androdid vs iOS: tweets containing picture
+========================================================
+
+
+```{r, echo=FALSE}
+tweet_picture_counts <- tweetsSmall %>%
+  filter(!str_detect(text, '^"')) %>%
+  count(source,
+        picture = ifelse(str_detect(text, "t.co"),
+          "Picture/link", "No picture/link"))
+ggplot(tweet_picture_counts, aes(source, n, fill = picture)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "", y = "Number of tweets", fill = "")
+
+```
+device analysis androdid vs iOS: tweets with quotation marks
+========================================================
+
+
+```{r, echo=FALSE}
+tweetsSmall %>%
+  count(source,
+        quoted = ifelse(str_detect(text,
+                 '^"'), "Quoted", "Not quoted")) %>%
+  ggplot(aes(source, n, fill = quoted)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "", y = "Number of tweets", fill = "") +
+  ggtitle('Whether tweets start with a quotation mark (")')
+
+```
+device analysis androdid vs iOS: frequent words
+========================================================
+
+
+```{r, echo=FALSE}
+android_iphone_ratios <- tweet_words %>%
+  count(word, source) %>%
+  filter(sum(n) >= 5) %>%
+  spread(source, n, fill = 0) %>%
+  ungroup() %>%
+  mutate_each(funs((. + 1) / sum(. + 1)), -word) %>%
+  mutate(logratio = log2(Android / iPhone)) %>%
+  arrange(desc(logratio))
+
+android_iphone_ratios %>%
+  group_by(logratio > 0) %>%
+  top_n(15, abs(logratio)) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, logratio)) %>%
+  ggplot(aes(word, logratio, fill = logratio < 0)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  ylab("Android / iPhone log ratio") +
+  scale_fill_manual(name = "", labels = c("Android", "iPhone"),
+                    values = c("red", "lightblue"))
+
+
+```
+number of tweets over time
+========================================================
+
+tweets <- read.csv("data/trumpTweets.csv")
+tweets$created <- ymd_hms(tweets$created)
+ggplot(data = tweets, aes(x = created)) +
+        geom_histogram(aes(fill = ..count..)) +
+        theme(legend.position = "none") +
+        xlab("Time") + ylab("Number of tweets") + 
+        scale_fill_gradient(low = "midnightblue",
+                            high = "aquamarine4")
+```
 
 how the data was collected
 ========================================================
