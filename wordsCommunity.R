@@ -83,7 +83,6 @@ makeWordcloud(E(subCluster)$text)
 #for(index in 0:2) {
 #  print(index)
 # TODO find biggest 3 cluster ids? how?
+which(c$membership %in% order(c$csize, decreasing = TRUE)[1:3])
 subCluster <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership == which.max(c$csize))])
 makeWordcloud(E(subCluster)$text)
-
-table(c$csize)
