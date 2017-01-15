@@ -59,6 +59,7 @@ makeWordcloud(tweets)
 subCluster <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership == which.max(c$csize))])
 
 # TODO how to access tweets / text object wihtin cluster
+# open question here: http://stackoverflow.com/questions/41661096/subgraph-text-analysis-in-r-igraph
 
 for(index in 0:2) {
   print(index)
