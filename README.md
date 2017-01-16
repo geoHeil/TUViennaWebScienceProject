@@ -1,29 +1,20 @@
 # webscience project
 
+  Network analysis of partial twitter network data obtained by hashtag **trump** is performed. 
+  
+  Basic garph metrics are computed and comparedfor two points in time. Additionally the network is visualized and text analysis is performed.
+  roups. Trying to identify the real trump we check for posts from ios 
+
 Group partners are:
-  - Georg Heiler e1225063
-  - Jasmina Kadić, eTODO
+  - Georg Heiler
+  - Jasmina Kadić
 
 *to collect data execute*
 ```
 Rscript o1collectionSingle.R
 ```
 
-*open things*
-  - check the code for `TODO` markers
-  - continue with assignemnt and report
+*building the report*
+Reproducible research tools (latex, knitR, R, Rmarkdown) were used to build this report. Simply build the latex document in Rstudio.
 
-## some good links
-  - https://www.r-bloggers.com/analyze-twitter-data-using-r/
-  - http://wombat2016.org/slides/yanchang.pdf
-  - http://blog.revolutionanalytics.com/2016/01/twitter-sentiment.html
-  - https://cran.r-project.org/web/packages/SocialMediaLab/SocialMediaLab.pdf
-  - https://gephi.org/features/
-  - http://www.vesnam.com/Rblog/viznets2/
-
-
-## possible dataset
-  - http://blog.kaggle.com/2016/06/03/dataset-spotlight-how-isis-uses-twitter/
-    - with pre-mad analysis https://www.kaggle.com/kzaman/how-isis-uses-twitter/kernels
-      - https://www.kaggle.com/ggospodinov/d/kzaman/how-isis-uses-twitter/tweet-analysis2/comments
-      - https://www.kaggle.com/violinbeats/d/kzaman/how-isis-uses-twitter/notebook-0427671092ae887aa87e/run/239876/comments
+[A prebuiltt download is available](https://github.com/geoHeil/TUViennaWebScienceProject/releases/download/1.0-reportComplete/report.pdf)
