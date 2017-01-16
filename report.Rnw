@@ -405,7 +405,11 @@ wordcloud(words = wordCorpus,
 
 We will analyze wordclouds for different communities, i.e. connected components. For the largest 3 the wordcounts will be depicted below.
 \todo{make the code work / build a foor loop}
-<<label="wordcloudCommunities", results='markup', cache=TRUE, warning=FALSE>>=
+<<label="wordcloudCommunitiesLoad", results='markup', cache=TRUE, warning=FALSE>>=
+load('tweets.Rdata') # will overwrite tweets variable
+g_twitter_actor <- tweets %>% Create("Actor", writeToFile=FALSE)
+@
+<<label="wordcloudCommunities", results='markup', cache=FALSE, warning=FALSE>>=
 c <- igraph::components(g_twitter_actor, mode = 'weak')
 
 makeWordcloud <- function(t){
@@ -467,9 +471,9 @@ E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Reply"] <- rpls$text
 subCluster1 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[1])])
 subCluster2 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[2])])
 subCluster3 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[3])])
-makeWordcloud(E(subCluster1)$text)
-makeWordcloud(E(subCluster2)$text)
-makeWordcloud(E(subCluster3)$text)
+#makeWordcloud(E(subCluster1)$text)
+#makeWordcloud(E(subCluster2)$text)
+#makeWordcloud(E(subCluster3)$text)
 @
 
 After Meryl Streep had her speech on Golden Globes about Trump her mentions with hashtag trump skyrocketed she is one of most frequently tweeted words on 10.01.2017 while searching twitter with trump hashtag. So even though there were no changes in 
