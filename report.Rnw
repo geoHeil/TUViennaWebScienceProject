@@ -346,7 +346,7 @@ wordcloud(words = wordCorpus, scale=c(6,0.1),
           colors=pal)
 	@
 
-Most frequent words can also be ploted using TermDocumentMatrix. For Trump tweets graph is given below.
+Most frequent words can also be plotted using TermDocumentMatrix. For Trump tweets graph is given below.
 
 <<label="wordcloud", results='markup', cache=TRUE, warning=FALSE>>=
 tdm <- TermDocumentMatrix(wordCorpus,
@@ -424,7 +424,7 @@ Second biggest community is not much active and does not share much content sinc
 Third community seems to be all non english speaking nodes who are interested in this topic.
 
  For the largest 3 the word clouds will be depicted below.
-<<label="wordcloudCommunitiesLoad", results='markup', cache=TRUE, warning=FALSE>>=
+<<label="0keepwordcloudCommunitiesLoad", results='markup', cache=TRUE, warning=FALSE>>=
 load('tweets.Rdata') # will overwrite tweets variable
 g_twitter_actor <- tweets %>% Create("Actor", writeToFile=FALSE)
 @
@@ -508,6 +508,7 @@ makeWordcloud(E(subCluster1)$text)
 makeWordcloud(E(subCluster2)$text)
 makeWordcloud(E(subCluster3)$text)
 @
+It is interesting to see what different communities are talking about as well as seing that the size of distinct words is shrinking rapidly for smaller communities.
 
 After Meryl Streep had her speech on Golden Globes about Trump her mentions with hashtag trump skyrocketed she is one of most frequently tweeted words on 10.01.2017 while searching twitter with trump hashtag. So even though there were no changes in 
 	metrics the content of tweets is different. This data set contains more that 18 000 tweets.
@@ -703,7 +704,7 @@ From the centrality measures results it is visible that a lot of data is from pe
 @
 
 Betweenness centrality quantifies the number of times a node acts as a bridge along the shortest path between two other nodes. Nodes that can connect biggest number of people are in actor network are:
-<<label="colnames", results='markup', cache=TRUE>>=
+<<label="colnamesxxx", results='markup', cache=TRUE>>=
  g1 <- read.graph("actorNetwork.graphml", format = "graphml")
  g2 <- read.graph("bimodalNetwork.graphml", format = "graphml")
   betw <- igraph::betweenness(g1, directed=T) 
@@ -722,8 +723,6 @@ From identified communities. and there are 1062 communities in this network, we 
 
 Because a lot of people are intrigued by Donald Trump and they already did analysis of his Twitter account even with Twitter limitations for collecting data, we could compare our results from when Donald Trump was presidential candidate and now when he is elected. This was mostly visible with text analysis because our network did not structurally changed much, and metrics stated the same, but textual data are changing daily. 
 
-Most interesting part of textual analysis was to compare data of Trumps Twitter profile based on device it was Tweeted on. It is  known that Donald Trump uses Android phone and his staff uses iOS phones. From created graphs differences are  visually visible. It is noticeable from data that Trumps profile was more active before election. He used more copy-paste retweet method also before election while now he does not do that very frequently. It is also visible that Android tweets are more angrier with tendency to repeat same words more and ending tweets with description of the mood, while the iOS tweets tend to be announcements and contain more pictures.  
- 
-\chapter{other things}
+Most interesting part of textual analysis was to compare data of Trumps Twitter profile based on device it was Tweeted on. It is  known that Donald Trump uses Android phone and his staff uses iOS phones. From created graphs differences are  visually visible. It is noticeable from data that Trumps profile was more active before election. He used more copy-paste retweet method also before election while now he does not do that very frequently. It is also visible that Android tweets are more angrier with tendency to repeat same words more and ending tweets with description of the mood, while the iOS tweets tend to be announcements and contain more pictures.
 
 \end{document}
