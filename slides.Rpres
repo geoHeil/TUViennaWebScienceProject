@@ -118,6 +118,7 @@ device analysis androdid vs iOS: when is tweeted
 
 
 ```{r, echo=FALSE}
+tweets3 <- read.csv("data/trumpTweets.csv")
 tweetsSmall <- tweets3 %>%
   select(id, statusSource, text, created) %>%
   extract(statusSource, "source", "Twitter for (.*?)<") %>%
@@ -169,6 +170,14 @@ device analysis androdid vs iOS: frequent words
 
 
 ```{r, echo=FALSE}
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
+tweet_words <- tweetsSmall %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text,
+       "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
 android_iphone_ratios <- tweet_words %>%
   count(word, source) %>%
   filter(sum(n) >= 5) %>%
@@ -192,9 +201,11 @@ android_iphone_ratios %>%
 
 
 ```
+
 number of tweets over time
 ========================================================
 
+```{r, echo=FALSE}
 tweets <- read.csv("data/trumpTweets.csv")
 tweets$created <- ymd_hms(tweets$created)
 ggplot(data = tweets, aes(x = created)) +
@@ -204,6 +215,89 @@ ggplot(data = tweets, aes(x = created)) +
         scale_fill_gradient(low = "midnightblue",
                             high = "aquamarine4")
 ```
+
+wordcloud per subgroup
+========================================================
+```{r, echo=FALSE}
+load('tweets.Rdata') # will overwrite tweets variable
+g_twitter_actor <- tweets %>% Create("Actor", writeToFile=FALSE)
+
+# Number and sizes of connected components
+c <- igraph::components(g_twitter_actor, mode = 'weak')
+c$no
+summary(c$csize)
+sort(c$csize, decreasing = T)[1:10]
+
+makeWordcloud <- function(t){
+  nohandles <- str_replace_all(t, "@\\w+", "") 
+  wordCorpus <- Corpus(VectorSource(nohandles))
+  wordCorpus <- tm_map(wordCorpus,
+                       content_transformer(function(x) iconv(x,
+                                                             to='UTF-8',
+                                                             sub='byte')),
+                       mc.cores=1)
+  wordCorpus <- tm_map(wordCorpus,
+                       removePunctuation,
+                       lazy=TRUE)
+  wordCorpus <- tm_map(wordCorpus,
+                       content_transformer(tolower),
+                       lazy=TRUE)
+  wordCorpus <- tm_map(wordCorpus,
+                       removeWords,
+                       stopwords("english"),
+                       lazy=TRUE)
+  wordCorpus <- tm_map(wordCorpus,
+                       removeNumbers,
+                       lazy=TRUE)
+  wordCorpus <- tm_map(wordCorpus,
+                       stripWhitespace,
+                       lazy=TRUE)
+  wordCorpus <- tm_map(wordCorpus,
+                       removeWords,
+                       c("trump","realdonaldtrump","the",
+                         "like","http","https","httpst"))
+  pal <- brewer.pal(9,"Reds")
+  pal <- pal[-(1:4)]
+  set.seed(123)
+  wordcloud(words = wordCorpus,
+            scale=c(6,0.1),
+            max.words=250,
+            random.order=FALSE, 
+            rot.per=0.35,
+            use.r.layout=FALSE,
+            colors=pal)
+}
+
+#http://stackoverflow.com/questions/41661096/subgraph-text-analysis-in-r-igraph/41664330#41664330
+#unique(E(g_twitter_actor)$edgeType)
+#library(reshape2); library(dplyr)
+#Make data frame for retweets, mentions, replies
+rts <- tweets %>% filter(!is.na(retweet_from))
+ms <- tweets %>% filter(users_mentioned!="character(0)")
+rpls <- tweets %>% filter(!is.na(reply_to))
+
+#Name each element in the users_mentioned list after the user who mentioned
+names(ms$users_mentioned) <- ms$screen_name
+ms <- melt(ms$users_mentioned) #melting creates a data frame for each user and the users they mention
+
+#Add the text
+ms$text <- tweets[match(ms$L1,tweets$screen_name),1]
+
+E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Retweet"] <- rts$text
+E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Mention"] <- ms$text
+E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Reply"] <- rpls$text
+
+# this creates a sub cluster
+# and just execute the wordcount code
+# subCluster <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership == which.max(c$csize))])
+subCluster1 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[1])])
+subCluster2 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[2])])
+subCluster3 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[3])])
+makeWordcloud(E(subCluster1)$text)
+makeWordcloud(E(subCluster2)$text)
+makeWordcloud(E(subCluster3)$text)
+```
+
 
 how the data was collected
 ========================================================
