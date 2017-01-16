@@ -416,9 +416,9 @@ makeWordcloud <- function(t){
   nohandles <- str_replace_all(t, "@\\w+", "") 
   wordCorpus <- Corpus(VectorSource(nohandles))
   wordCorpus <- tm_map(wordCorpus,
-                       content_transformer(function(x) iconv(x,
-                                                             to='UTF-8',
-                                                             sub='byte')),
+     content_transformer(function(x) iconv(x,
+                                    to='UTF-8',
+                                    sub='byte')),
                        mc.cores=1)
   wordCorpus <- tm_map(wordCorpus,
                        removePunctuation,
