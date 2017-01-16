@@ -452,25 +452,39 @@ makeWordcloud <- function(t){
             colors=pal)
 }
 
-#Make data frame for retweets, mentions, replies
+# Make data frame for retweets, mentions, replies
 rts <- tweets %>% filter(!is.na(retweet_from))
 ms <- tweets %>% filter(users_mentioned!="character(0)")
 rpls <- tweets %>% filter(!is.na(reply_to))
 
-#Name each element in the users_mentioned list after the user who mentioned
+# Name each element in the users_mentioned list
+# after the user who mentioned
 names(ms$users_mentioned) <- ms$screen_name
-ms <- melt(ms$users_mentioned) #melting creates a data frame for each user and the users they mention
+ms <- melt(ms$users_mentioned) #melting creates a data frame
+# for each user and the users they mention
 
 #Add the text
 ms$text <- tweets[match(ms$L1,tweets$screen_name),1]
 
-E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Retweet"] <- rts$text
-E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Mention"] <- ms$text
-E(g_twitter_actor)$text[E(g_twitter_actor)$edgeType %in% "Reply"] <- rpls$text
+E(g_twitter_actor)$text[
+  E(g_twitter_actor)$edgeType %in% "Retweet"
+  ] <- rts$text
+E(g_twitter_actor)$text[
+  E(g_twitter_actor)$edgeType %in% "Mention"
+  ] <- ms$text
+E(g_twitter_actor)$text[
+  E(g_twitter_actor)$edgeType %in% "Reply"
+  ] <- rpls$text
 
-subCluster1 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[1])])
-subCluster2 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[2])])
-subCluster3 <- induced.subgraph(g_twitter_actor, V(g_twitter_actor)[which(c$membership %in% order(c$csize, decreasing = TRUE)[3])])
+subCluster1 <- induced.subgraph(g_twitter_actor,
+  V(g_twitter_actor)[which(c$membership %in% order(c$csize
+      , decreasing = TRUE)[1])])
+subCluster2 <- induced.subgraph(g_twitter_actor,
+  V(g_twitter_actor)[which(c$membership %in% order(c$csize
+      ,decreasing = TRUE)[2])])
+subCluster3 <- induced.subgraph(g_twitter_actor,
+  V(g_twitter_actor)[which(c$membership %in% order(c$csize
+      ,decreasing = TRUE)[3])])
 makeWordcloud(E(subCluster1)$text)
 makeWordcloud(E(subCluster2)$text)
 makeWordcloud(E(subCluster3)$text)
