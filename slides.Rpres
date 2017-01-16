@@ -224,10 +224,6 @@ g_twitter_actor <- tweets %>% Create("Actor", writeToFile=FALSE)
 
 # Number and sizes of connected components
 c <- igraph::components(g_twitter_actor, mode = 'weak')
-c$no
-summary(c$csize)
-sort(c$csize, decreasing = T)[1:10]
-
 makeWordcloud <- function(t){
   nohandles <- str_replace_all(t, "@\\w+", "") 
   wordCorpus <- Corpus(VectorSource(nohandles))
