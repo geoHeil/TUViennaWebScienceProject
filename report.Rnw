@@ -403,8 +403,27 @@ wordcloud(words = wordCorpus,
 	       colors=pal)
 	@
 
-We will analyze wordclouds for different communities, i.e. connected components. For the largest 3 the wordcounts will be depicted below.
-\todo{comment / compare, say something about size of different groups}
+We will analyze wordclouds for different communities, i.e. connected components. 
+First we will checked how many components are there in actor network and what are their sizes.
+The weakly connected components are found by a simple breadth-first search.
+Also, sizes of three biggest communities are below.
+
+
+<<label="wordcloudCommunitiesLoad", results='markup', cache=TRUE, warning=FALSE>>=
+    g1 <- read.graph("actorNetwork.graphml", format = "graphml")
+	c <- igraph::components(g1, mode = 'weak')
+	c$no
+	summary(c$csize)
+	sort(c$csize, decreasing = T)[1:3]
+	@
+
+As we can see actor network has 1062 communitites, and size of the biggest community is significantly bigger than other two. 
+This is most influential community and we can even see that from wordclouds since wordcloud for biggest community has the least 
+differences from the  wordcloud for the entire network.
+Second biggest community is not much active and does not share much content since there are not many words in wordcloud.
+Third community seems to be all non english speaking nodes who are interested in this topic.
+
+ For the largest 3 the word clouds will be depicted below.
 <<label="wordcloudCommunitiesLoad", results='markup', cache=TRUE, warning=FALSE>>=
 load('tweets.Rdata') # will overwrite tweets variable
 g_twitter_actor <- tweets %>% Create("Actor", writeToFile=FALSE)
@@ -657,7 +676,7 @@ ggplot(data = tweets, aes(x = created)) +
 
 
 \chapter{Discussion and conclusion}
-What can you tell about the communities identified? What do you learn by looking at the different networks?
+
 
 
 Donald Trump is very controversial person and his success on presidential elections in USA in 2016 is still mystery to many people. In his race he used social media but mostly Twitter to express his thought and feelings about various types of things. This all makes him very good topic for research in social media. There is so many data and papers written about this topic. We tried to analyze his behavior on Twitter after he is elected and also study Twitter partial network using hashtag trump.
@@ -684,7 +703,13 @@ From the centrality measures results it is visible that a lot of data is from pe
 @
 
 Betweenness centrality quantifies the number of times a node acts as a bridge along the shortest path between two other nodes. Nodes that can connect biggest number of people are in actor network are:
-
+<<label="colnames", results='markup', cache=TRUE>>=
+ g1 <- read.graph("actorNetwork.graphml", format = "graphml")
+ g2 <- read.graph("bimodalNetwork.graphml", format = "graphml")
+  betw <- igraph::betweenness(g1, directed=T) 
+  print("Betweeness centrality (from highest to lowest)")
+  print(sort(betw, decreasing = T)[1:10])
+@
 <<label="colnames", results='markup', cache=TRUE>>=
  g1 <- read.graph("actorNetwork.graphml", format = "graphml")
  g2 <- read.graph("bimodalNetwork.graphml", format = "graphml")
@@ -693,16 +718,7 @@ Betweenness centrality quantifies the number of times a node acts as a bridge al
   print(sort(betw, decreasing = T)[1:10])
 @
 
-Actor network has 1062 communities.
-
-<<label="colnames4", results='markup', cache=TRUE>>=
- g1 <- read.graph("actorNetwork.graphml", format = "graphml")
- g2 <- read.graph("bimodalNetwork.graphml", format = "graphml")
-c <- igraph::components(g1, mode = 'weak')
-c$no
-summary(c$csize)
-sort(c$csize, decreasing = T)[1:10]
-@
+From identified communities. and there are 1062 communities in this network, we could see that most of the content comes from the largest community. Most other communities have only size 2.
 
 Because a lot of people are intrigued by Donald Trump and they already did analysis of his Twitter account even with Twitter limitations for collecting data, we could compare our results from when Donald Trump was presidential candidate and now when he is elected. This was mostly visible with text analysis because our network did not structurally changed much, and metrics stated the same, but textual data are changing daily. 
 
