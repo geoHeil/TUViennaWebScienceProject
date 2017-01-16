@@ -725,6 +725,5 @@ Because a lot of people are intrigued by Donald Trump and they already did analy
 Most interesting part of textual analysis was to compare data of Trumps Twitter profile based on device it was Tweeted on. It is  known that Donald Trump uses Android phone and his staff uses iOS phones. From created graphs differences are  visually visible. It is noticeable from data that Trumps profile was more active before election. He used more copy-paste retweet method also before election while now he does not do that very frequently. It is also visible that Android tweets are more angrier with tendency to repeat same words more and ending tweets with description of the mood, while the iOS tweets tend to be announcements and contain more pictures.  
  
 \chapter{other things}
-report \todo{fix remaining todos and upload}
-presentation \todo{todo}
+
 \end{document}
